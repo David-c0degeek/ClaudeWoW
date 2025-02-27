@@ -1,280 +1,101 @@
-# WoW AI Player
+# ClaudeWoW
 
-An advanced AI system designed to autonomously play World of Warcraft in a private sandbox environment.
+An autonomous AI for playing World of Warcraft with advanced learning and planning capabilities.
 
-![WoW AI Player](docs/images/header_image.png)
+## Advanced Pathfinding and Navigation
 
-## Overview
+ClaudeWoW's advanced pathfinding and navigation system provides sophisticated movement capabilities:
 
-This project implements a complete AI player for World of Warcraft that can:
+### Features
 
-- Perceive and understand the game state through computer vision
-- Make intelligent decisions based on game knowledge and current state
-- Execute actions through keyboard and mouse control
-- Learn and improve over time
-- Navigate the game world and complete quests
-- Engage in combat with appropriate class-specific rotations
-- Adapt to different situations and challenges
+- **3D Pathfinding**: Full support for elevation and vertical movement
+- **Terrain Analysis**: Automatically analyzes terrain difficulty and traversability
+- **Multi-zone Routing**: Navigate seamlessly between different zones
+- **Dungeon Navigation**: Specialized pathfinding for dungeon environments
+- **Flight Path Integration**: Intelligent use of in-game flight paths
 
-**Important Note:** This project is intended for use in a private sandbox environment with proper permissions. Botting on official World of Warcraft servers is against the Terms of Service.
+### Components
 
-## Architecture
+- `advanced_navigation.py` - Core 3D navigation with terrain handling
+- `advanced_pathfinding.py` - Multiple pathfinding algorithms (A*, JPS, Theta*, RRT)
+- `terrain_analyzer.py` - Terrain classification and obstacle detection
+- `flight_path_manager.py` - Flight path optimization and routing
+- `dungeon_navigator.py` - Specialized dungeon navigation
 
-The system is structured into three main components:
+### Pathfinding Algorithms
 
-### 1. Perception System
-- Screen analysis to extract game state information
-- UI element detection and OCR for text reading
-- Entity detection and tracking
-- Minimap analysis for navigation
+- **A*** - Standard pathfinding for general navigation
+- **Jump Point Search (JPS)** - Optimized for grid-based environments
+- **Theta*** - For smooth, any-angle paths
+- **RRT** - For complex 3D environments with narrow passages
 
-### 2. Decision System
-- Behavior tree for high-level decision making
-- Specialized managers for combat, navigation, and quests
-- Planning and goal management
-- Knowledge base of game information
+## System Architecture
 
-### 3. Action System
-- Keyboard and mouse control
-- Action execution and timing
-- Movement and targeting
-- Spell casting and ability usage
+ClaudeWoW uses a perception-decision-action architecture:
 
-## Requirements
+- **Perception**: Screen reading, OCR, entity detection, minimap analysis
+- **Decision**: Planning, navigation, combat AI, quest management
+- **Action**: Game control, ability execution, movement
 
-- Python 3.8+
-- A local World of Warcraft installation
-- CUDA-compatible GPU (recommended for faster vision processing)
-- Dependencies:
-  - OpenCV
-  - PyTorch/TensorFlow
-  - Tesseract OCR
-  - pyautogui/pynput
-  - And more (see `requirements.txt`)
+## Learning Capabilities
 
-## Installation
+- **Reinforcement Learning**: Q-learning with experience buffer
+- **Knowledge Expansion**: Pattern detection and knowledge base expansion
+- **Performance Metrics**: Compare against human benchmarks
+- **Transfer Learning**: Apply skills across different contexts
+- **Hierarchical Planning**: Sophisticated goal management
 
-1. Clone this repository:
-```bash
-git clone https://github.com/yourusername/wow-ai-player.git
-cd wow-ai-player
-```
+## Getting Started
 
-2. Run the setup script to create the folder structure and install dependencies:
-```bash
-# On Windows
-powershell -ExecutionPolicy Bypass -File initial_setup.ps1
-
-# On Linux/Mac
-# First make the script executable
-chmod +x initial_setup.sh
-./initial_setup.sh
-```
-
-3. Install Tesseract OCR:
-   - Windows: Download and install from [here](https://github.com/UB-Mannheim/tesseract/wiki)
-   - Linux: `sudo apt-get install tesseract-ocr`
-   - Mac: `brew install tesseract`
-
-4. Update the configuration file with your specific settings:
-```bash
-# Edit config/config.json with your preferred editor
-# Make sure to set the correct game path and resolution
-```
-
-## Usage
-
-1. Launch the WoW AI player:
-```bash
-# Basic usage
-python launcher.py
-
-# With specific config file
-python launcher.py --config path/to/config.json
-
-# With startup delay (to give you time to switch to game window)
-python launcher.py --delay 5
-
-# With debug logging
-python launcher.py --log-level DEBUG
-```
-
-2. The AI will begin analyzing the screen and making decisions once the game is running.
-
-3. Press Ctrl+C in the terminal to stop the AI.
+1. Install requirements: `pip install -r requirements.txt`
+2. Run initial setup: `python initial_setup.ps1`
+3. Start the AI: `python main.py`
 
 ## Configuration
 
-The system is highly configurable through the `config/config.json` file:
+Edit `config/config.json` to customize AI behavior:
 
-```json
-{
-  "game_path": "C:\\Program Files (x86)\\World of Warcraft\\_retail_\\Wow.exe",
-  "screenshot_interval": 0.1,
-  "input_delay": 0.05,
-  "log_level": "INFO",
-  "ui_scale": 1.0,
-  "resolution": {
-    "width": 1920,
-    "height": 1080
-  }
-}
-```
+- Game settings (resolution, keybindings)
+- AI behavior settings
+- Learning parameters
+- Navigation preferences
 
-Key configuration options:
-- `game_path`: Path to your WoW executable
-- `screenshot_interval`: How frequently to capture the screen (in seconds)
-- `input_delay`: Delay between inputs to avoid overwhelming the game
-- `ui_scale`: Your in-game UI scale setting
-- `resolution`: Your game resolution
+## Documentation
 
-## Extending the System
+See the `docs/` directory for detailed documentation:
 
-### Adding New Abilities
+- [Architecture Overview](docs/architecture.md)
+- [Navigation System](docs/navigation.md)
+- [Learning System](docs/learning.md)
+- [Combat AI](docs/combat.md)
 
-Add new class abilities to `data/game_knowledge/abilities.json`:
+## Requirements
 
-```json
-{
-  "warrior": {
-    "new_ability": {
-      "name": "New Ability",
-      "rank": 1,
-      "level": 10,
-      "type": "ability",
-      "resource": "rage",
-      "cost": 20,
-      "cooldown": 30,
-      "effects": [
-        {"type": "damage", "target": "enemy", "value": 50}
-      ]
-    }
-  }
-}
-```
+- Python 3.9+
+- OpenCV
+- NumPy
+- PyTorch
+- Tesseract OCR
 
-### Adding Quest Information
+## Development Roadmap
 
-Add new quests to `data/game_knowledge/quests.json`:
+1. ✅ **Integration & Testing Phase** (COMPLETED)
+2. ✅ **Advanced Navigation System** (COMPLETED)
+   - 3D pathfinding with terrain handling
+   - Specialized algorithms for different terrain types
+   - Flight path integration and optimization
+   - Dungeon navigation capabilities
 
-```json
-{
-  "new_quest_id": {
-    "id": "new_quest_id",
-    "title": "New Quest Title",
-    "level": 10,
-    "faction": "alliance",
-    "zone": "elwynn_forest",
-    "quest_giver": "npc_id",
-    "turn_in": "npc_id",
-    "objectives": [
-      {
-        "type": "kill",
-        "target": "mob_name",
-        "count": 10,
-        "description": "Kill 10 Wolves"
-      }
-    ]
-  }
-}
-```
-
-### Training Custom Vision Models
-
-To improve vision capabilities:
-
-1. Collect training data by running in data collection mode:
-```bash
-python tools/collect_training_data.py --output data/training
-```
-
-2. Train a new model:
-```bash
-python tools/train_vision_model.py --data data/training --output data/models/vision_model.pt
-```
-
-3. Update the config to use your new model:
-```json
-{
-  "model_paths": {
-    "vision": "data/models/vision_model.pt"
-  }
-}
-```
-
-## LLM Integration for Social Intelligence
-
-The WoW AI player includes advanced social intelligence powered by Large Language Models (LLMs). This enables natural conversations with other players and realistic social behaviors.
-
-### Supported LLM Providers
-
-The system supports multiple LLM providers:
-
-- **OpenAI (GPT models)**: High-quality responses with excellent gaming knowledge
-- **Anthropic (Claude models)**: Natural conversational abilities with strong role-playing
-- **Google (Gemini models)**: Google's AI models with strong general knowledge
-- **Azure OpenAI**: Enterprise-grade OpenAI models with added security
-- **Mistral AI**: Cost-effective alternative with competitive performance
-- **Ollama**: Local API for running open models on your machine
-- **Local Models**: Completely offline models for maximum privacy
-
-### Configuration
-
-You can configure LLM settings through the GUI launcher or by editing `config/llm_config.json`:
-
-1. Launch the configuration GUI:
-   ```bash
-   python launcher.py --gui
-
-## Project Structure
-
-```
-wow-ai-player/
-├── config/                # Configuration files
-│   └── config.json        # Main configuration
-├── data/                  # Data storage
-│   ├── game_knowledge/    # Game information database
-│   ├── models/            # Trained ML models
-│   ├── recordings/        # Gameplay recordings for training
-│   └── templates/         # Template images for matching
-├── logs/                  # Application logs
-├── src/                   # Source code
-│   ├── action/            # Action execution
-│   ├── decision/          # Decision making
-│   ├── knowledge/         # Knowledge representation
-│   ├── learning/          # Machine learning
-│   ├── perception/        # Game state perception
-│   └── utils/             # Utility functions
-├── tests/                 # Unit and integration tests
-├── tools/                 # Utility scripts
-├── initial_setup.ps1      # Windows setup script
-├── initial_setup.sh       # Linux/Mac setup script
-├── launcher.py            # Main entry point
-├── requirements.txt       # Python dependencies
-└── README.md              # This file
-```
-
-## License
-
-This project is for educational purposes only. Use in accordance with Blizzard's Terms of Service.
+3. **Next Phases** (See NEXT_STEPS.md for details)
+   - Class-specific combat modules (2-3 weeks)
+   - Economic intelligence system (2-3 weeks)
+   - Enhanced learning capabilities (3-4 weeks)
+   - Social intelligence system (2-3 weeks)
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## License
 
-## Disclaimer
-
-This software is intended for educational purposes and private use in sandbox environments only. The authors do not condone or support:
-
-1. Using this software on official World of Warcraft servers
-2. Violating Blizzard's Terms of Service
-3. Gaining unfair advantages in multiplayer environments
-4. Any commercial use of this software
-
-The authors are not responsible for any misuse of this software or any consequences resulting from such misuse.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

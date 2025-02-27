@@ -1,7 +1,7 @@
 """
-WoW AI Player Launcher
+ClaudeWoW AI Player Launcher
 
-This script initializes and starts the WoW AI player.
+This script initializes and starts the ClaudeWoW AI player with advanced navigation.
 """
 
 import os
@@ -13,6 +13,7 @@ import argparse
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
+import threading
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +23,9 @@ from src.utils.llm_config import LLMConfigPanel
 from src.perception.screen_reader import ScreenReader
 from src.action.controller import Controller
 from src.decision.agent import Agent
+# Import modified agent with advanced navigation
+from src.decision.modified_agent import ModifiedAgent
+from src.decision.navigation_integration import NavigationSystem
 
 def setup_logging(log_level):
     """Configure logging"""
@@ -49,7 +53,7 @@ def setup_logging(log_level):
 
 def parse_arguments():
     """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description="WoW AI Player")
+    parser = argparse.ArgumentParser(description="ClaudeWoW AI Player")
     
     parser.add_argument("--config", type=str, help="Path to config file")
     parser.add_argument("--log-level", type=str, default="INFO", 
@@ -59,6 +63,9 @@ def parse_arguments():
                         help="Delay in seconds before starting (to give time to switch to the game window)")
     
     parser.add_argument("--gui", action="store_true", help="Launch in GUI configuration mode")
+    # Add argument for advanced navigation
+    parser.add_argument("--advanced-navigation", action="store_true", 
+                        help="Use advanced navigation system")
     
     return parser.parse_args()
 
@@ -74,7 +81,7 @@ def launch_gui(config_path=None):
     
     # Create main window
     root = tk.Tk()
-    root.title("WoW AI Player Configuration")
+    root.title("ClaudeWoW AI Player Configuration")
     root.geometry("800x600")
     
     # Create notebook for tabs
@@ -130,6 +137,38 @@ def launch_gui(config_path=None):
     ui_scale_entry = ttk.Entry(game_frame, textvariable=ui_scale_var, width=5)
     ui_scale_entry.grid(row=2, column=1, sticky=tk.W, padx=5, pady=5)
     
+    # Add advanced navigation checkbox
+    navigation_frame = ttk.LabelFrame(general_tab, text="Navigation Settings")
+    navigation_frame.pack(padx=10, pady=10, fill="both")
+    
+    advanced_nav_var = tk.BooleanVar(value=config.get("navigation", {}).get("use_advanced_navigation", True))
+    advanced_nav_check = ttk.Checkbutton(
+        navigation_frame, text="Use Advanced 3D Navigation", variable=advanced_nav_var
+    )
+    advanced_nav_check.grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+    
+    # Advanced navigation algorithm dropdown
+    ttk.Label(navigation_frame, text="Pathfinding Algorithm:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+    
+    algorithm_var = tk.StringVar(value=config.get("navigation", {}).get("algorithm", "astar"))
+    algorithm_combo = ttk.Combobox(navigation_frame, textvariable=algorithm_var, state="readonly")
+    algorithm_combo["values"] = ("astar", "jps", "theta", "rrt")
+    algorithm_combo.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
+    
+    # Use flight paths checkbox
+    flight_paths_var = tk.BooleanVar(value=config.get("navigation", {}).get("use_flight_paths", True))
+    flight_paths_check = ttk.Checkbutton(
+        navigation_frame, text="Use Flight Paths for Long Distance Travel", variable=flight_paths_var
+    )
+    flight_paths_check.grid(row=2, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
+    
+    # Use dungeon navigation checkbox
+    dungeon_nav_var = tk.BooleanVar(value=config.get("navigation", {}).get("use_dungeon_navigation", True))
+    dungeon_nav_check = ttk.Checkbutton(
+        navigation_frame, text="Use Specialized Dungeon Navigation", variable=dungeon_nav_var
+    )
+    dungeon_nav_check.grid(row=3, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
+    
     # Player information
     player_frame = ttk.LabelFrame(general_tab, text="Player Character")
     player_frame.pack(padx=10, pady=10, fill="both")
@@ -178,19 +217,6 @@ def launch_gui(config_path=None):
                 config[key] = value
 
     llm_config_panel = LLMConfigPanel(provider_tab, config, save_llm_config)
-
-    # Usage settings tab
-    usage_tab = ttk.Frame(llm_notebook)
-    llm_notebook.add(usage_tab, text="Usage Settings")
-
-    # Initialize LLM usage panel
-    def save_usage_config(updated_config):
-        # Update usage-related settings
-        for key, value in updated_config.items():
-            if key.startswith("use_llm_") or key in ["prioritize_llm_channels", "daily_token_limit"]:
-                config[key] = value
-
-    llm_usage_panel = LLMUsagePanel(usage_tab, config, save_usage_config)
     
     # Social settings tab
     social_tab = ttk.Frame(notebook)
@@ -276,6 +302,14 @@ def launch_gui(config_path=None):
             "height": height_var.get()
         }
         config["ui_scale"] = ui_scale_var.get()
+        # Save navigation settings
+        if "navigation" not in config:
+            config["navigation"] = {}
+        config["navigation"]["use_advanced_navigation"] = advanced_nav_var.get()
+        config["navigation"]["algorithm"] = algorithm_var.get()
+        config["navigation"]["use_flight_paths"] = flight_paths_var.get()
+        config["navigation"]["use_dungeon_navigation"] = dungeon_nav_var.get()
+        
         config["player_name"] = player_name_var.get()
         config["player_class"] = player_class_var.get()
         config["player_race"] = player_race_var.get()
@@ -290,11 +324,11 @@ def launch_gui(config_path=None):
         save_config(config, config_path)
         
         # Ask if user wants to launch now
-        if messagebox.askyesno("Launch AI Player", "Configuration saved. Launch AI player now?"):
+        if messagebox.askyesno("Launch ClaudeWoW", "Configuration saved. Launch ClaudeWoW now?"):
             root.destroy()
             main(config=config)
         else:
-            messagebox.showinfo("Configuration Saved", "Configuration has been saved. You can launch the AI player later.")
+            messagebox.showinfo("Configuration Saved", "Configuration has been saved. You can launch ClaudeWoW later.")
     
     launch_frame = ttk.Frame(actions_tab)
     launch_frame.pack(padx=10, pady=10, fill="both", expand=True)
@@ -302,7 +336,7 @@ def launch_gui(config_path=None):
     save_button = ttk.Button(launch_frame, text="Save Configuration", command=lambda: save_config(config, config_path))
     save_button.pack(pady=5)
     
-    launch_button = ttk.Button(launch_frame, text="Save and Launch AI Player", command=save_and_launch)
+    launch_button = ttk.Button(launch_frame, text="Save and Launch ClaudeWoW", command=save_and_launch)
     launch_button.pack(pady=10)
     
     delay_var = tk.IntVar(value=5)
@@ -314,10 +348,97 @@ def launch_gui(config_path=None):
     # Run the GUI
     root.mainloop()
 
-# Update to launcher.py
+class LLMUsagePanel:
+    def __init__(self, parent, config, save_callback):
+        self.parent = parent
+        self.config = config
+        self.save_callback = save_callback
+        
+        self._create_widgets()
+    
+    def _create_widgets(self):
+        # Create usage settings
+        ttk.Label(self.parent, text="LLM Usage Configuration").pack(padx=10, pady=10)
+        
+        # Chat settings
+        chat_frame = ttk.LabelFrame(self.parent, text="Chat Settings")
+        chat_frame.pack(padx=10, pady=10, fill="both")
+        
+        self.use_llm_chat_var = tk.BooleanVar(value=self.config.get("use_llm_chat", True))
+        ttk.Checkbutton(chat_frame, text="Use LLM for chat responses", 
+                       variable=self.use_llm_chat_var).grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        # Channels
+        channels_frame = ttk.LabelFrame(chat_frame, text="Prioritize Channels")
+        channels_frame.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        prio_channels = self.config.get("prioritize_llm_channels", ["whisper", "guild", "party", "say"])
+        
+        self.whisper_var = tk.BooleanVar(value="whisper" in prio_channels)
+        self.guild_var = tk.BooleanVar(value="guild" in prio_channels)
+        self.party_var = tk.BooleanVar(value="party" in prio_channels)
+        self.say_var = tk.BooleanVar(value="say" in prio_channels)
+        
+        ttk.Checkbutton(channels_frame, text="Whisper", variable=self.whisper_var).grid(row=0, column=0, padx=5, pady=2, sticky=tk.W)
+        ttk.Checkbutton(channels_frame, text="Guild", variable=self.guild_var).grid(row=0, column=1, padx=5, pady=2, sticky=tk.W)
+        ttk.Checkbutton(channels_frame, text="Party", variable=self.party_var).grid(row=1, column=0, padx=5, pady=2, sticky=tk.W)
+        ttk.Checkbutton(channels_frame, text="Say", variable=self.say_var).grid(row=1, column=1, padx=5, pady=2, sticky=tk.W)
+        
+        # Decision making
+        decision_frame = ttk.LabelFrame(self.parent, text="Decision Making")
+        decision_frame.pack(padx=10, pady=10, fill="both")
+        
+        self.use_llm_decisions_var = tk.BooleanVar(value=self.config.get("use_llm_for_decisions", True))
+        ttk.Checkbutton(decision_frame, text="Use LLM for decision making", 
+                       variable=self.use_llm_decisions_var).grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.use_llm_quests_var = tk.BooleanVar(value=self.config.get("use_llm_for_quests", True))
+        ttk.Checkbutton(decision_frame, text="Use LLM for quest analysis", 
+                       variable=self.use_llm_quests_var).grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        # Token limits
+        limits_frame = ttk.LabelFrame(self.parent, text="Usage Limits")
+        limits_frame.pack(padx=10, pady=10, fill="both")
+        
+        ttk.Label(limits_frame, text="Daily token limit:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.token_limit_var = tk.IntVar(value=self.config.get("daily_token_limit", 100000))
+        token_limit_entry = ttk.Entry(limits_frame, textvariable=self.token_limit_var, width=10)
+        token_limit_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        # Save button
+        save_button = ttk.Button(self.parent, text="Save LLM Usage Settings", command=self._save_settings)
+        save_button.pack(padx=10, pady=10)
+    
+    def _save_settings(self):
+        # Collect channel priorities
+        prio_channels = []
+        if self.whisper_var.get():
+            prio_channels.append("whisper")
+        if self.guild_var.get():
+            prio_channels.append("guild")
+        if self.party_var.get():
+            prio_channels.append("party")
+        if self.say_var.get():
+            prio_channels.append("say")
+        
+        # Collect all settings
+        updated_config = {
+            "use_llm_chat": self.use_llm_chat_var.get(),
+            "use_llm_for_decisions": self.use_llm_decisions_var.get(),
+            "use_llm_for_quests": self.use_llm_quests_var.get(),
+            "prioritize_llm_channels": prio_channels,
+            "daily_token_limit": self.token_limit_var.get()
+        }
+        
+        # Save via callback
+        self.save_callback(updated_config)
+        
+        from tkinter import messagebox
+        messagebox.showinfo("Settings Saved", "LLM usage settings have been saved.")
 
 def main(config=None):
-    """Main entry point for the WoW AI Player"""
+    """Main entry point for the ClaudeWoW AI Player"""
     # Parse command line arguments
     args = parse_arguments()
     
@@ -328,12 +449,15 @@ def main(config=None):
     
     # Setup logging
     logger = setup_logging(args.log_level)
-    logger.info("Starting WoW AI Player")
+    logger.info("Starting ClaudeWoW AI Player")
     
     # Load configuration if not provided
     if config is None:
         config = load_config(args.config)
     logger.info("Configuration loaded")
+    
+    # Check for advanced navigation from args or config
+    use_advanced_navigation = args.advanced_navigation or config.get("navigation", {}).get("use_advanced_navigation", False)
     
     # Check if GUI overlay is enabled
     use_gui_overlay = config.get("use_gui_overlay", True)
@@ -354,7 +478,19 @@ def main(config=None):
         # Initialize components
         screen_reader = ScreenReader(config)
         controller = Controller(config)
-        agent = Agent(config, screen_reader, controller)
+        
+        # Initialize navigation system first if using advanced navigation
+        if use_advanced_navigation:
+            logger.info("Initializing advanced navigation system")
+            navigation_system = NavigationSystem(config, screen_reader)
+        
+        # Create appropriate agent
+        if use_advanced_navigation:
+            logger.info("Using advanced navigation agent")
+            agent = ModifiedAgent(config, screen_reader, controller, navigation_system)
+        else:
+            logger.info("Using basic navigation agent")
+            agent = Agent(config, screen_reader, controller)
         
         logger.info("All components initialized successfully")
         
@@ -377,7 +513,7 @@ def main(config=None):
                     action["target"] = chat_entry.get("target")
                 
                 # Execute the chat action
-                controller.execute([action])
+                controller.execute_action(action)
             
             gui_overlay.set_chat_callback(handle_manual_chat)
             
@@ -404,7 +540,7 @@ def main(config=None):
             
             try:
                 # Process game state
-                game_state = screen_reader.capture_game_state()
+                game_state = screen_reader.read()
                 
                 # Decide on actions
                 actions = agent.decide(game_state)
@@ -433,7 +569,8 @@ def main(config=None):
                 if actions:
                     action_descriptions = [a.get("description", a.get("type", "unknown")) for a in actions]
                     logger.info(f"Executing actions: {', '.join(action_descriptions)}")
-                    controller.execute(actions)
+                    for action in actions:
+                        controller.execute_action(action)
                     
                     # Update GUI with chat actions
                     if gui_overlay:
@@ -487,7 +624,7 @@ def main(config=None):
         if gui_overlay:
             gui_overlay.running = False
         
-        logger.info("WoW AI Player shutting down")
+        logger.info("ClaudeWoW AI Player shutting down")
 
 if __name__ == "__main__":
     main()

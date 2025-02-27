@@ -364,50 +364,6 @@ class SocialManager:
             "priority": 0.2
         })
     
- 
-    def _generate_group_chat(self, state: GameState) -> Optional[str]:
-        """
-        Generate casual group chat based on the current situation
-        
-        Args:
-            state: Current game state
-        
-        Returns:
-            Optional[str]: Chat message or None
-        """
-        if self.use_llm_for_group_chat:
-            # Build context for LLM
-            context = {
-                "current_activity": "in a dungeon group" if state.is_in_instance else "in a group questing",
-                "group_members": ", ".join([m.get("name", "") for m in state.group_members]),
-                "relationship": "friendly",  # Default to friendly for group members
-                "conversation_history": self._get_recent_group_chat(state)
-            }
-            
-            # Use LLM to generate natural group chat
-            prompt = "Generate a friendly casual comment or question for your group in World of Warcraft"
-            return self.llm.generate_chat_response(prompt, "group", "party", context)
-        else:
-            # Use the existing template-based method
-            # Different types of casual group chat
-            chat_types = {
-                "progress": [
-                    "Making good progress so far!",
-                    "We're doing great, nice job everyone.",
-                    "Good teamwork!"
-                ],
-                # ...existing templates
-            }
-            
-            # Choose a category and then a message
-            if state.is_in_instance:
-                category = random.choice(["progress", "instance"])
-            else:
-                category = "game"
-            
-            messages = chat_types[category]
-            return random.choice(messages)
-    
     def _get_recent_group_chat(self, state: GameState) -> str:
         """
         Get recent group chat history

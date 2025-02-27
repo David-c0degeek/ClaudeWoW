@@ -13,9 +13,43 @@
         "combat": "data/models/combat_model.pt",
         "navigation": "data/models/navigation_model.pt"
     },
+    "learning": {
+        "enabled": true,
+        "experience_buffer_size": 10000,
+        "learning_rate": 0.001,
+        "discount_factor": 0.99,
+        "exploration_rate": 0.1,
+        "save_interval": 300,
+        "knowledge_queue_size": 1000,
+        "min_confidence": 0.3,
+        "inference_confidence": 0.6,
+        "use_rl_for_decisions": false
+    },
+    "planning": {
+        "enabled": true,
+        "max_active_goals": 5,
+        "goal_replan_interval": 300,
+        "use_hierarchical_planning": true,
+        "save_successful_plans": true,
+        "plan_lookahead": 10
+    },
+    "social": {
+        "chat_response_chance": 0.7,
+        "greeting_chance": 0.8,
+        "join_group_chance": 0.9,
+        "llm_model": "claude-3-opus-20240229"
+    },
     "training": {
         "batch_size": 64,
         "learning_rate": 0.0001,
         "epochs": 100
+    },
+    "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "debug": {
+        "save_screenshots": false,
+        "ocr_debug": false,
+        "vision_debug": false,
+        "learning_debug": true,
+        "planning_debug": true
     }
 }

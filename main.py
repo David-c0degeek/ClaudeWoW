@@ -1,5 +1,6 @@
 """
-WoW AI Player - Main Entry Point
+ClaudeWoW - Advanced AI Player for World of Warcraft
+Main Entry Point
 """
 import logging
 import os
@@ -11,9 +12,11 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.perception.screen_reader import ScreenReader
-from src.decision.agent import Agent
+# Use our enhanced agent with advanced navigation capabilities
+from src.decision.modified_agent import Agent
 from src.action.controller import Controller
 from src.utils.config import load_config
+from src.decision.navigation_integration import NavigationSystem
 
 def setup_logging():
     """Configure logging"""
@@ -37,7 +40,7 @@ def setup_logging():
 def main():
     """Main entry point for the WoW AI Player"""
     logger = setup_logging()
-    logger.info("Starting WoW AI Player")
+    logger.info("Starting ClaudeWoW AI Player")
     
     # Load configuration
     config = load_config()
@@ -47,7 +50,13 @@ def main():
         # Initialize components
         screen_reader = ScreenReader(config)
         controller = Controller(config)
-        agent = Agent(config, screen_reader, controller)
+        
+        # Initialize navigation system
+        navigation_system = NavigationSystem(config, screen_reader)
+        logger.info("Advanced navigation system initialized")
+        
+        # Initialize agent with navigation system
+        agent = Agent(config, screen_reader, controller, navigation_system)
         
         logger.info("All components initialized successfully")
         
@@ -71,7 +80,7 @@ def main():
     except Exception as e:
         logger.exception(f"Unhandled exception: {e}")
     finally:
-        logger.info("WoW AI Player shutting down")
+        logger.info("ClaudeWoW AI Player shutting down")
 
 if __name__ == "__main__":
     main()
