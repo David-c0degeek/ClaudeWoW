@@ -1,0 +1,22 @@
+{
+    "llm_provider": "openai",
+    "openai_model": "gpt-3.5-turbo",
+    "openai_api_key": "",
+    "claude_model": "claude-3-haiku-20240307",
+    "claude_api_key": "",
+    "google_model": "gemini-pro",
+    "google_api_key": "",
+    "azure_model": "gpt-4",
+    "azure_api_key": "",
+    "azure_endpoint": "",
+    "azure_api_version": "2023-05-15",
+    "mistral_model": "mistral-small",
+    "mistral_api_key": "",
+    "ollama_model": "llama2",
+    "local_model": "mistral-7b-instruct",
+    "local_model_path": "",
+    "llm_max_tokens": 150,
+    "llm_temperature": 0.7,
+    "use_llm_threshold": 0.5,
+    "prioritize_llm_channels": ["whisper", "party", "guild"]
+  }
