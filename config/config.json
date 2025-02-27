@@ -1,0 +1,21 @@
+{
+    "game_path": "C:\\Program Files (x86)\\World of Warcraft\\_retail_\\Wow.exe",
+    "screenshot_interval": 0.1,
+    "input_delay": 0.05,
+    "log_level": "INFO",
+    "ui_scale": 1.0,
+    "resolution": {
+        "width": 1920,
+        "height": 1080
+    },
+    "model_paths": {
+        "vision": "data/models/vision_model.pt",
+        "combat": "data/models/combat_model.pt",
+        "navigation": "data/models/navigation_model.pt"
+    },
+    "training": {
+        "batch_size": 64,
+        "learning_rate": 0.0001,
+        "epochs": 100
+    }
+}
