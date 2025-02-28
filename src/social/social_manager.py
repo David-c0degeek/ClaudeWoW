@@ -6,7 +6,8 @@ from typing import Dict, List, Tuple, Any, Optional
 import threading
 import random
 
-from src.social.chat_analyzer import ChatAnalyzer
+from src.social.enhanced_chat_analyzer import EnhancedChatAnalyzer
+from src.social.reputation_manager import ReputationManager
 from src.social.group_coordinator import GroupCoordinator
 from src.perception.screen_reader import GameState
 from src.knowledge.game_knowledge import GameKnowledge
@@ -16,6 +17,12 @@ from src.social.character_profile import CharacterProfile
 class SocialManager:
     """
     Manages all social interactions and coordination for the AI player
+    
+    Features:
+    - Chat analysis and response generation
+    - Social reputation and relationship management
+    - Group coordination
+    - Community reputation tracking
     """
     
     def __init__(self, config: Dict, knowledge_base: GameKnowledge):
@@ -30,8 +37,9 @@ class SocialManager:
         self.config = config
         self.knowledge_base = knowledge_base
         
-        # Initialize components
-        self.chat_analyzer = ChatAnalyzer(config, knowledge_base)
+        # Initialize components with enhanced social intelligence
+        self.reputation_manager = ReputationManager(config)
+        self.chat_analyzer = EnhancedChatAnalyzer(config, knowledge_base)
         self.group_coordinator = GroupCoordinator(config, knowledge_base)
         
         # Social state
@@ -43,7 +51,8 @@ class SocialManager:
             "last_group_chat_time": 0,
             "nearby_players": set(),
             "grouped_players": set(),
-            "social_cooldowns": {}
+            "social_cooldowns": {},
+            "last_reputation_decay": time.time()
         }
         
         # Chat throttling settings
@@ -58,6 +67,7 @@ class SocialManager:
         
         # Initialize message history
         self.message_timestamps = []
+        self.chat_history = []
         
         # LLM settings
         self.use_llm_for_group_chat = config.get("use_llm_for_group_chat", True)
@@ -65,8 +75,19 @@ class SocialManager:
 
         # Initialize character profile
         self.character_profile = CharacterProfile(config)
+        
+        # Initialize social tracking
+        self.known_guilds = set()
+        self.server_communities = {
+            "trade": {"members": set(), "last_interaction": 0},
+            "general": {"members": set(), "last_interaction": 0},
+            "looking_for_group": {"members": set(), "last_interaction": 0}
+        }
+        
+        # Configure reputation decay interval
+        self.reputation_decay_interval = config.get("reputation_decay_interval", 86400)  # 24 hours default
 
-        self.logger.info("SocialManager initialized")
+        self.logger.info("Enhanced SocialManager initialized with reputation management")
     
     def update(self, state: GameState) -> None:
         """
@@ -75,9 +96,17 @@ class SocialManager:
         Args:
             state: Current game state
         """
+        current_time = time.time()
+        
+        # Check if it's time to apply reputation decay
+        if current_time - self.social_state["last_reputation_decay"] > self.reputation_decay_interval:
+            self.reputation_manager.apply_reputation_decay()
+            self.social_state["last_reputation_decay"] = current_time
+            self.logger.info("Applied periodic reputation decay")
+        
         # Update chat system
         if hasattr(state, "chat_log") and state.chat_log:
-            self._process_chat_log(state.chat_log)
+            self._process_chat_log(state.chat_log, state)
         
         # Update group coordination
         self.group_coordinator.update_group_state(state)
@@ -88,15 +117,7 @@ class SocialManager:
             new_players = current_players - self.social_state["nearby_players"]
             
             # Consider greeting new players who come into view
-            for player in new_players:
-                if time.time() - self.social_state["last_greeting_time"] > 300:  # 5 minutes
-                    if random.random() < self.friendliness * 0.3:  # Chance to greet based on friendliness
-                        self.chat_queue.append({
-                            "message": f"Hello, {player}!",
-                            "channel": "say",
-                            "priority": 0.5
-                        })
-                        self.social_state["last_greeting_time"] = time.time()
+            self._handle_new_player_greetings(new_players, state)
             
             # Update our tracking of nearby players
             self.social_state["nearby_players"] = current_players
@@ -106,63 +127,180 @@ class SocialManager:
             current_group = set(member.get("name", "") for member in state.group_members)
             new_members = current_group - self.social_state["grouped_players"]
             
-            # Always greet new group members
-            for player in new_members:
-                self.chat_queue.append({
-                    "message": f"Hi {player}, nice to group with you!",
-                    "channel": "party",
-                    "priority": 0.8
-                })
+            # Handle new group members
+            self._handle_new_group_members(new_members, state)
             
             # Update our tracking of group members
             self.social_state["grouped_players"] = current_group
+            
+            # Update reputation for ongoing group experience
+            if current_time - self.social_state.get("last_group_reputation_update", 0) > 300:  # Every 5 minutes
+                self._update_group_reputation(current_group)
+                self.social_state["last_group_reputation_update"] = current_time
         
         # Consider emoting occasionally if friendliness is high
         if (self.friendliness > 0.7 and 
-            time.time() - self.social_state["last_emote_time"] > 600 and  # 10 minutes
+            current_time - self.social_state["last_emote_time"] > 600 and  # 10 minutes
             random.random() < 0.2):
             self._consider_random_emote(state)
-            self.social_state["last_emote_time"] = time.time()
+            self.social_state["last_emote_time"] = current_time
 
         # Update character profile if needed
         if hasattr(state, "player_level") and state.player_level != self.character_profile.level:
             self.character_profile.level = state.player_level
             self._update_profile_achievements(state)
         
-        # Consider greeting new players who come into view
+        # Update guild reputation if in a guild
+        if hasattr(state, "player_guild") and state.player_guild:
+            self._update_guild_information(state)
+    
+    def _handle_new_player_greetings(self, new_players: set, state: GameState) -> None:
+        """
+        Handle greetings for new players that come into view
+        
+        Args:
+            new_players: Set of new player names
+            state: Current game state
+        """
+        current_time = time.time()
+        
         for player in new_players:
-            if time.time() - self.social_state["last_greeting_time"] > 300:  # 5 minutes
-                if random.random() < self.friendliness * 0.3:  # Chance to greet based on friendliness
+            # Skip if empty name
+            if not player:
+                continue
+                
+            # Get relationship status
+            relationship = "neutral"
+            player_data = self.reputation_manager.get_player_relation(player)
+            if player_data:
+                relationship = player_data.get("relationship", "neutral")
+            
+            # Only greet if enough time has passed since last greeting
+            if current_time - self.social_state["last_greeting_time"] > 300:  # 5 minutes
+                greeting_chance = self.friendliness * 0.3  # Base chance
+                
+                # Adjust chance based on relationship
+                if relationship == "friendly":
+                    greeting_chance *= 1.5
+                elif relationship == "trusted":
+                    greeting_chance *= 2.0
+                elif relationship == "disliked":
+                    greeting_chance *= 0.3
+                elif relationship == "hated":
+                    greeting_chance = 0  # Don't greet hated players
+                
+                if random.random() < greeting_chance:
                     # Use character profile for personalized greeting
-                    relationship = "neutral"
-                    if player in self.chat_analyzer.social_memory:
-                        relationship = self.chat_analyzer.social_memory[player].get("relationship", "neutral")
-                    
                     greeting = self.character_profile.get_greeting(player, relationship)
                     
                     self.chat_queue.append({
                         "message": greeting,
                         "channel": "say",
-                        "priority": 0.5
+                        "priority": 0.5,
+                        "target": player
                     })
-                    self.social_state["last_greeting_time"] = time.time()
-            
-            # Update our tracking of nearby players
-            self.social_state["nearby_players"] = current_players
+                    self.social_state["last_greeting_time"] = current_time
+                    
+                    # Update reputation slightly for greeting
+                    self.reputation_manager.update_player_reputation(
+                        player, 
+                        "chat_reciprocation", 
+                        {"magnitude": 0.2, "note": "Greeted player"}
+                    )
+    
+    def _handle_new_group_members(self, new_members: set, state: GameState) -> None:
+        """
+        Handle greetings and reputation updates for new group members
         
-        # Always greet new group members with personalized greeting
+        Args:
+            new_members: Set of new group member names
+            state: Current game state
+        """
         for player in new_members:
-            # Use character profile for personalized greeting
+            # Skip if empty name
+            if not player:
+                continue
+                
+            # Get relationship status
+            relationship = "neutral"
+            player_data = self.reputation_manager.get_player_relation(player)
+            if player_data:
+                relationship = player_data.get("relationship", "neutral")
+            
+            # Always greet new group members with personalized greeting
             greeting = self.character_profile.get_greeting(player, "friendly")
             
             self.chat_queue.append({
                 "message": greeting,
                 "channel": "party",
-                "priority": 0.8
+                "priority": 0.8,
+                "target": player
             })
+            
+            # Update reputation for grouping
+            self.reputation_manager.update_player_reputation(
+                player, 
+                "mutual_group_experience", 
+                {"magnitude": 0.5, "note": "Joined group together"}
+            )
+    
+    def _update_group_reputation(self, group_members: set) -> None:
+        """
+        Update reputation for ongoing group experience
         
-        # Update our tracking of group members
-        self.social_state["grouped_players"] = current_group
+        Args:
+            group_members: Set of current group members
+        """
+        for player in group_members:
+            # Skip if empty name
+            if not player:
+                continue
+                
+            # Small reputation increase for ongoing group
+            self.reputation_manager.update_player_reputation(
+                player, 
+                "mutual_group_experience", 
+                {"magnitude": 0.2, "note": "Ongoing group experience"}
+            )
+    
+    def _update_guild_information(self, state: GameState) -> None:
+        """
+        Update guild information and reputation
+        
+        Args:
+            state: Current game state
+        """
+        guild_name = state.player_guild
+        
+        # Skip if no guild
+        if not guild_name:
+            return
+            
+        # Add to known guilds
+        self.known_guilds.add(guild_name)
+        
+        # Update guild information if available
+        if hasattr(state, "guild_info") and state.guild_info:
+            guild_type = state.guild_info.get("type", "unknown")
+            
+            # Update guild reputation
+            context = {
+                "guild_type": guild_type
+            }
+            
+            # Add known members if available
+            if hasattr(state, "guild_roster") and state.guild_roster:
+                for member in state.guild_roster:
+                    member_name = member.get("name")
+                    if member_name:
+                        context["member_name"] = member_name
+                        
+                        # Update guild reputation with this member
+                        self.reputation_manager.update_guild_reputation(
+                            guild_name,
+                            "chat_reciprocation",  # Generic positive interaction
+                            context
+                        )
     
     def generate_social_actions(self, state: GameState) -> List[Dict]:
         """
@@ -181,7 +319,7 @@ class SocialManager:
         self.message_timestamps = [t for t in self.message_timestamps if current_time - t < 60.0]
         can_send_chat = len(self.message_timestamps) < self.max_messages_per_minute
         
-        # Process any pending chat responses
+        # Process any pending chat responses (high priority)
         if self.response_queue and can_send_chat:
             response = self.response_queue.pop(0)
             
@@ -211,13 +349,13 @@ class SocialManager:
             self.message_timestamps.append(current_time)
         
         # Get group coordination actions
-        if state.is_in_group or state.is_in_raid:
+        if hasattr(state, "is_in_group") and state.is_in_group:
             group_actions = self.group_coordinator.generate_coordination_actions(state)
             actions.extend(group_actions)
         
         # Consider occasional group chat if in a group
-        if (state.is_in_group and 
-            time.time() - self.social_state["last_group_chat_time"] > 300 and  # 5 minutes
+        if (hasattr(state, "is_in_group") and state.is_in_group and 
+            current_time - self.social_state["last_group_chat_time"] > 300 and  # 5 minutes
             random.random() < self.chattiness * 0.2):  # Chance based on chattiness
             group_chat = self._generate_group_chat(state)
             if group_chat and can_send_chat:
@@ -227,17 +365,18 @@ class SocialManager:
                     "channel": "party",
                     "description": "Send casual group chat"
                 })
-                self.social_state["last_group_chat_time"] = time.time()
+                self.social_state["last_group_chat_time"] = current_time
                 self.message_timestamps.append(current_time)
         
         return actions
     
-    def _process_chat_log(self, chat_log: List[str]) -> None:
+    def _process_chat_log(self, chat_log: List[str], game_state: GameState = None) -> None:
         """
         Process new chat messages
         
         Args:
             chat_log: List of new chat messages
+            game_state: Current game state for context
         """
         for chat_entry in chat_log:
             # Parse the chat entry
@@ -252,8 +391,25 @@ class SocialManager:
             if sender == player_name:
                 continue
             
+            # Track message in chat history
+            self.chat_history.append({
+                "sender": sender,
+                "channel": channel,
+                "message": message,
+                "timestamp": time.time()
+            })
+            
+            # Trim chat history if needed
+            max_history = self.config.get("max_chat_history", 100)
+            if len(self.chat_history) > max_history:
+                self.chat_history = self.chat_history[-max_history:]
+            
+            # Update community tracking for global channels
+            if channel in ["trade", "general", "looking_for_group"]:
+                self._update_community_tracker(sender, channel, message)
+            
             # Analyze the message and generate a response
-            response = self.chat_analyzer.analyze_chat(message, sender, channel)
+            response = self.chat_analyzer.analyze_chat(message, sender, channel, game_state)
             
             # If we have a response, add it to the queue
             if response:
@@ -266,7 +422,7 @@ class SocialManager:
                     response_channel = "say"
                 elif channel == "yell":
                     response_channel = "say"  # Respond to yells with normal say
-                elif channel == "party" or channel == "raid":
+                elif channel in ["party", "raid"]:
                     response_channel = channel
                 else:
                     # For other channels, whisper the person
@@ -281,6 +437,55 @@ class SocialManager:
                         "timestamp": time.time()
                     }
                 })
+    
+    def _update_community_tracker(self, sender: str, channel: str, message: str) -> None:
+        """
+        Update community tracking for global channels
+        
+        Args:
+            sender: Message sender
+            channel: Chat channel
+            message: Message content
+        """
+        if channel in self.server_communities:
+            # Add to community members
+            self.server_communities[channel]["members"].add(sender)
+            self.server_communities[channel]["last_interaction"] = time.time()
+            
+            # Check for community contribution
+            contribution_type = None
+            
+            # Simple heuristics for contribution types
+            if "?" in message and len(message) > 10:
+                # Someone asking a question
+                pass
+            elif any(term in message.lower() for term in ["thanks", "thank", "helpful", "appreciate"]):
+                # Someone thanking others
+                contribution_type = "answering_questions"
+            elif channel == "trade" and any(term in message.lower() for term in ["wts", "selling", "auction"]):
+                # Someone trading
+                if "cheap" in message.lower() or "discount" in message.lower():
+                    contribution_type = "market_price_stabilization"
+            elif any(term in message.lower() for term in ["help", "boost", "carry", "run"]):
+                # Someone offering help
+                if "free" in message.lower() or "new" in message.lower():
+                    contribution_type = "newbie_assistance"
+                else:
+                    contribution_type = "carrying_lowbies"
+            elif any(term in message.lower() for term in ["lfg", "looking for group", "need", "lfm"]):
+                # Someone forming groups
+                contribution_type = "group_formation"
+            
+            # Record community contribution if detected
+            if contribution_type:
+                self.reputation_manager.update_community_reputation(
+                    contribution_type,
+                    {
+                        "community": channel,
+                        "member_name": sender,
+                        "message": message
+                    }
+                )
     
     def _parse_chat_entry(self, chat_entry: str) -> Tuple[str, str, str]:
         """
@@ -344,11 +549,11 @@ class SocialManager:
         general_emotes = ["wave", "smile", "laugh", "cheer", "dance", "thank"]
         
         # Context-specific emotes
-        if state.is_in_combat:
+        if hasattr(state, "is_in_combat") and state.is_in_combat:
             context_emotes = ["charge", "battle", "roar", "threaten"]
-        elif state.is_resting:
+        elif hasattr(state, "is_resting") and state.is_resting:
             context_emotes = ["sit", "sleep", "relax", "yawn"]
-        elif state.is_in_group:
+        elif hasattr(state, "is_in_group") and state.is_in_group:
             context_emotes = ["greet", "salute", "thank", "hug"]
         else:
             context_emotes = ["wave", "hello", "curious", "flex"]
@@ -364,19 +569,16 @@ class SocialManager:
             "priority": 0.2
         })
     
-    def _get_recent_group_chat(self, state: GameState) -> str:
+    def _get_recent_group_chat(self) -> str:
         """
         Get recent group chat history
-        
-        Args:
-            state: Current game state
         
         Returns:
             str: Recent group chat
         """
         # Filter chat history for group messages
         group_chat = [entry for entry in self.chat_history 
-                     if entry.get("channel") == "party" or entry.get("channel") == "raid"]
+                     if entry.get("channel") in ["party", "raid"]]
         
         # Get last 3 messages
         recent = group_chat[-3:] if len(group_chat) > 3 else group_chat
@@ -439,10 +641,10 @@ class SocialManager:
         if self.use_llm_for_group_chat:
             # Build context for LLM
             context = {
-                "current_activity": "in a dungeon group" if state.is_in_instance else "in a group questing",
-                "group_members": ", ".join([m.get("name", "") for m in state.group_members]),
+                "current_activity": "in a dungeon group" if hasattr(state, "is_in_instance") and state.is_in_instance else "in a group questing",
+                "group_members": ", ".join([m.get("name", "") for m in state.group_members]) if hasattr(state, "group_members") else "",
                 "relationship": "friendly",  # Default to friendly for group members
-                "conversation_history": self._get_recent_group_chat(state),
+                "conversation_history": self._get_recent_group_chat(),
                 "character_profile": self.character_profile.get_profile_as_prompt(),
                 "game_state": self._format_game_state_for_llm(state)
             }
@@ -493,3 +695,104 @@ class SocialManager:
                 parts.append("In combat")
         
         return ". ".join(parts)
+    
+    def get_player_relationship_status(self, player_name: str) -> Dict:
+        """
+        Get relationship status for a player
+        
+        Args:
+            player_name: Name of the player
+            
+        Returns:
+            Dict: Relationship information
+        """
+        return self.reputation_manager.get_player_relation(player_name)
+    
+    def get_relationship_advice(self, player_name: str) -> Dict:
+        """
+        Get advice for improving relationship with a player
+        
+        Args:
+            player_name: Name of the player
+            
+        Returns:
+            Dict: Relationship advice
+        """
+        return self.reputation_manager.generate_relationship_advice(player_name=player_name)
+    
+    def get_guild_contribution_strategy(self, guild_name: str) -> List[str]:
+        """
+        Get strategies for contributing to a guild
+        
+        Args:
+            guild_name: Name of the guild
+            
+        Returns:
+            List[str]: Contribution strategies
+        """
+        return self.reputation_manager.get_guild_contribution_strategy(guild_name)
+    
+    def set_social_behavior(self, friendliness: float = None, chattiness: float = None, helpfulness: float = None) -> None:
+        """
+        Update social behavior settings
+        
+        Args:
+            friendliness: Friendliness level (0.0 to 1.0)
+            chattiness: Chattiness level (0.0 to 1.0)
+            helpfulness: Helpfulness level (0.0 to 1.0)
+        """
+        if friendliness is not None:
+            self.friendliness = max(0.0, min(1.0, friendliness))
+            
+        if chattiness is not None:
+            self.chattiness = max(0.0, min(1.0, chattiness))
+            self.chat_analyzer.chattiness = self.chattiness
+            
+        if helpfulness is not None:
+            self.helpfulness = max(0.0, min(1.0, helpfulness))
+        
+        self.logger.info(f"Updated social behavior: friendliness={self.friendliness}, chattiness={self.chattiness}, helpfulness={self.helpfulness}")
+    
+    def analyze_scam_message(self, message: str, sender: str) -> Dict:
+        """
+        Analyze a message for potential scam content
+        
+        Args:
+            message: Message text
+            sender: Message sender
+            
+        Returns:
+            Dict: Scam analysis results
+        """
+        return self.reputation_manager.detect_potential_scam(message, sender)
+    
+    def get_top_relationships(self, relation_type: str = "players", count: int = 5) -> List[Dict]:
+        """
+        Get top relationships
+        
+        Args:
+            relation_type: Type of relationships (players, guilds, trade_partners)
+            count: Number of results to return
+            
+        Returns:
+            List[Dict]: Top relationships
+        """
+        return self.reputation_manager.get_top_relations(relation_type, count)
+    
+    def update_relationship(self, player: str, event_type: str, context: Optional[Dict] = None) -> Dict:
+        """
+        Manually update relationship with a player
+        
+        Args:
+            player: Player name
+            event_type: Type of interaction
+            context: Additional context
+            
+        Returns:
+            Dict: Updated relationship information
+        """
+        if not event_type in self.reputation_manager.trust_heuristics:
+            self.logger.warning(f"Unknown event type: {event_type}")
+            return self.reputation_manager.get_player_relation(player)
+            
+        return self.chat_analyzer.update_relationship(player, event_type, context)

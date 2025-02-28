@@ -17,6 +17,7 @@ from src.decision.modified_agent import Agent
 from src.action.controller import Controller
 from src.utils.config import load_config
 from src.decision.navigation_integration import NavigationSystem
+from src.economic.economic_manager import EconomicManager
 
 def setup_logging():
     """Configure logging"""
@@ -55,16 +56,57 @@ def main():
         navigation_system = NavigationSystem(config, screen_reader)
         logger.info("Advanced navigation system initialized")
         
-        # Initialize agent with navigation system
-        agent = Agent(config, screen_reader, controller, navigation_system)
+        # Initialize economic intelligence system
+        economic_manager = EconomicManager(config)
+        logger.info("Economic intelligence system initialized")
+        
+        # Initialize agent with navigation system and economic intelligence
+        agent = Agent(config, screen_reader, controller, navigation_system, economic_manager=economic_manager)
         
         logger.info("All components initialized successfully")
         
+        # Create required data directories if they don't exist
+        data_dirs = [
+            "data/economic",
+            "data/economic/price_data",
+            "data/economic/resource_nodes",
+            "data/economic/recipes"
+        ]
+        for directory in data_dirs:
+            os.makedirs(directory, exist_ok=True)
+        
         # Main loop
         logger.info("Entering main loop")
+        last_economic_update = time.time()
+        economic_update_interval = config.get("economic.update_interval", 3600)  # 1 hour default
+        
         while True:
             # Process game state
             game_state = screen_reader.capture_game_state()
+            
+            # Periodic economic data updates
+            current_time = time.time()
+            if current_time - last_economic_update > economic_update_interval:
+                logger.info("Performing periodic economic data update")
+                
+                # Update character info (gold, profession skills, etc.)
+                if "character_info" in game_state:
+                    economic_manager.update_character_info(
+                        level=game_state["character_info"].get("level", 60),
+                        gold=game_state["character_info"].get("gold", 0),
+                        profession_skills=game_state["character_info"].get("profession_skills", {})
+                    )
+                
+                # Scan inventory if available
+                if "inventory" in game_state:
+                    economic_manager.scan_inventory(game_state["inventory"])
+                
+                # Update auction house data if we're at the AH
+                if "at_auction_house" in game_state and game_state["at_auction_house"]:
+                    if "auction_data" in game_state:
+                        economic_manager.update_market_data(game_state["auction_data"])
+                
+                last_economic_update = current_time
             
             # Decide on actions
             actions = agent.decide(game_state)

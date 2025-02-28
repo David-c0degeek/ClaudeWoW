@@ -1,84 +1,71 @@
 # ClaudeWoW Documentation
 
-Welcome to the ClaudeWoW documentation. This directory contains detailed information about the system architecture, components, and how they work together.
+Welcome to the ClaudeWoW documentation. This directory contains comprehensive 
+documentation for the AI system designed to play World of Warcraft autonomously.
 
-## Table of Contents
+## Documentation Sections
 
-- [Architecture Overview](architecture.md) - System architecture and component interactions
-- [Navigation System](navigation.md) - Advanced 3D pathfinding and navigation
-- [Learning System](learning.md) - Learning capabilities and knowledge expansion
-- [Combat AI](combat.md) - Combat decision making and class rotations
-- [Perception System](perception.md) - Screen reading and game state detection
-- [Action System](action.md) - Game control and action execution
+### 1. Architecture and Design
 
-## Project Structure
+- **[Architecture Overview](architecture.md)** - The high-level architecture and design of the system
+- **[Code Structure](code_structure.md)** - How the code is organized and structured
+- **[Configuration Guide](configuration.md)** - How to configure the system
 
-ClaudeWoW follows a perception-decision-action architecture:
+### 2. Core Systems
 
-```
-src/
-├── perception/ - Game state detection
-│   ├── screen_reader.py - Basic screen reading
-│   ├── entity_detector.py - Entity detection
-│   ├── minimap_analyzer.py - Minimap analysis
-│   ├── text_extractor.py - Text extraction (OCR)
-│   └── ui_detector.py - UI element detection
-│
-├── decision/ - Decision making
-│   ├── agent.py - Main agent decision making
-│   ├── behavior_tree.py - Behavior tree implementation
-│   ├── combat_manager.py - Combat decision making
-│   ├── navigation_manager.py - Basic navigation
-│   ├── advanced_navigation.py - 3D navigation
-│   ├── advanced_pathfinding.py - Advanced pathfinding algorithms
-│   ├── terrain_analyzer.py - Terrain analysis
-│   ├── flight_path_manager.py - Flight path management
-│   ├── dungeon_navigator.py - Dungeon navigation
-│   ├── planner.py - High-level planning
-│   └── quest_manager.py - Quest tracking and management
-│
-├── learning/ - Learning systems
-│   ├── reinforcement_learning.py - RL implementation
-│   ├── knowledge_expansion.py - Knowledge expansion
-│   ├── performance_metrics.py - Performance tracking
-│   ├── transfer_learning.py - Skill transfer
-│   └── hierarchical_planning.py - HTN planning
-│
-├── action/ - Action execution
-│   ├── controller.py - Raw input control
-│   └── movement_controller.py - Movement execution
-│
-├── knowledge/ - Game knowledge
-│   └── game_knowledge.py - Game knowledge base
-│
-├── social/ - Social interaction
-│   ├── chat_analyzer.py - Chat analysis
-│   ├── llm_interface.py - LLM interface
-│   └── social_manager.py - Social interaction management
-│
-└── utils/ - Utilities
-    ├── config.py - Configuration utilities
-    └── gui_overlay.py - GUI overlay for debugging
-```
+- **[Navigation System](navigation.md)** - Detailed documentation of the pathfinding and navigation capabilities
+- **[Combat System](combat.md)** - Combat decision making and class-specific implementations
+- **[Economic System](economic.md)** - Market analysis, farming optimization, and inventory management
+- **[Learning System](learning.md)** - Machine learning capabilities for improved performance
+- **[Social System](social.md)** - Chat analysis and social interactions
+
+### 3. Development Guides
+
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to the project
+- **[Testing Guide](testing.md)** - How to write and run tests
+- **[Performance Tuning](performance.md)** - Performance optimization guidelines
+
+### 4. User Guides
+
+- **[Installation Guide](installation.md)** - How to install and set up the system
+- **[Usage Guide](usage.md)** - How to use the system
+- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
 
 ## Getting Started
 
-To get started with ClaudeWoW:
+If you're new to ClaudeWoW, we recommend starting with:
 
-1. Make sure you have Python 3.9+ installed
-2. Clone the repository
-3. Install dependencies: `pip install -r requirements.txt`
-4. Run initial setup: `python initial_setup.ps1`
-5. Start the AI: `python main.py`
+1. The [Architecture Overview](architecture.md) to understand the system design
+2. The [Installation Guide](installation.md) to set up the system
+3. The [Usage Guide](usage.md) to start using ClaudeWoW
 
-## Configuration
+## Core Components
 
-The main configuration file is `config/config.json`, which controls behavior of all components. See the [Configuration Guide](configuration.md) for details.
+ClaudeWoW consists of several interconnected systems:
 
-## Contributing
+### Perception System
+Analyzes the game screen, extracts information, and builds a game state model.
 
-Contributions are welcome! Please see [Contributing Guidelines](../CONTRIBUTING.md) for details on how to contribute to the project.
+### Decision System
+Makes decisions based on the current game state, including navigation, combat, and economic decisions.
 
-## Current Status and Roadmap
+### Action System
+Executes decisions by interacting with the game through keyboard and mouse inputs.
 
-See [NEXT_STEPS.md](../NEXT_STEPS.md) for the current project status and development roadmap.
+### Learning System
+Improves performance over time through reinforcement learning and imitation learning.
+
+### Knowledge System
+Stores and retrieves game knowledge, such as quest information, item data, and terrain details.
+
+## Advanced Documentation
+
+For more detailed information on specific components, please refer to the respective documentation files listed above.
+
+## API Reference
+
+For developers looking to extend ClaudeWoW's functionality, comprehensive API documentation is available for each module in their respective source files.
+
+## Ongoing Development
+
+ClaudeWoW is under active development. For the latest roadmap and milestones, please refer to the [NEXT_STEPS.md](../NEXT_STEPS.md) file in the root directory.

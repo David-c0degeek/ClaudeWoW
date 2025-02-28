@@ -23,7 +23,41 @@
         "knowledge_queue_size": 1000,
         "min_confidence": 0.3,
         "inference_confidence": 0.6,
-        "use_rl_for_decisions": false
+        "use_rl_for_decisions": false,
+        "deep_learning_enabled": true,
+        "imitation_learning_enabled": true,
+        "mode": "hybrid",
+        "use_visual_features": true,
+        "num_actions": 20,
+        "state_dim": 100,
+        "observation_shape": [
+            100
+        ],
+        "max_episode_steps": 1000,
+        "training_interval": 600,
+        "deep_learning_interval": 300,
+        "update_interval": 5.0,
+        "recording_interval": 5,
+        "visual_processing": {
+            "in_channels": 3,
+            "hidden_channels": 32,
+            "feature_dim": 256
+        },
+        "ppo_learning_rate": 0.0003,
+        "ppo_n_steps": 2048,
+        "ppo_batch_size": 64,
+        "ppo_n_epochs": 10,
+        "ppo_gamma": 0.99,
+        "ppo_gae_lambda": 0.95,
+        "ppo_clip_range": 0.2,
+        "ppo_ent_coef": 0.01,
+        "ppo_vf_coef": 0.5,
+        "ppo_max_grad_norm": 0.5,
+        "bc_learning_rate": 0.0001,
+        "visual_bc_learning_rate": 0.0001,
+        "batch_size": 32,
+        "num_workers": 2,
+        "use_planning": true
     },
     "planning": {
         "enabled": true,
