@@ -152,6 +152,47 @@ class QuestManager:
         
         active_quests = state.active_quests
         
+        # Validate quests - filter out any suspicious/invalid quests
+        valid_quests = []
+        for quest in active_quests:
+            quest_title = quest.get("title", "").strip()
+            
+            # Check if the quest has a valid title
+            if not quest_title:
+                self.logger.warning(f"Ignoring quest with empty title")
+                continue
+                
+            # Check for common OCR errors and gibberish
+            if len(quest_title) < 3:
+                self.logger.warning(f"Ignoring invalid quest with too short title: '{quest_title}'")
+                continue
+                
+            # Check for unusual characters that suggest OCR errors
+            unusual_chars = [c for c in quest_title if not (c.isalnum() or c.isspace() or c in "'-!?:")]
+            if unusual_chars and len(unusual_chars) > len(quest_title) * 0.3:  # More than 30% unusual chars
+                self.logger.warning(f"Ignoring quest with suspicious characters: '{quest_title}'")
+                continue
+                
+            # Check for excessive whitespace or parentheses
+            if quest_title.count(' ') > len(quest_title) * 0.5 or quest_title.count('(') > 1:
+                self.logger.warning(f"Ignoring quest with suspicious formatting: '{quest_title}'")
+                continue
+                
+            # Check if the quest has valid objectives
+            if "objectives" in quest and not quest["objectives"]:
+                self.logger.warning(f"Ignoring quest with empty objectives: '{quest_title}'")
+                continue
+                
+            # Quest passed validation
+            valid_quests.append(quest)
+            
+        # If no valid quests found, return None
+        if not valid_quests:
+            return None
+            
+        # Continue with valid quests only
+        active_quests = valid_quests
+        
         # Check for completable quests first
         completable_quests = [q for q in active_quests if q.get("can_complete", False)]
         if completable_quests:

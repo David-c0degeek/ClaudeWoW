@@ -17,7 +17,6 @@ from src.decision.modified_agent import Agent
 from src.action.controller import Controller
 from src.utils.config import load_config
 from src.decision.navigation_integration import NavigationSystem
-from src.economic.economic_manager import EconomicManager
 
 def setup_logging():
     """Configure logging"""
@@ -38,6 +37,36 @@ def setup_logging():
     )
     return logging.getLogger("wow_ai")
 
+def is_game_client_running(game_state):
+    """
+    Check if a World of Warcraft client is actually running
+    
+    Args:
+        game_state: Current game state
+        
+    Returns:
+        bool: True if game client appears to be running, False otherwise
+    """
+    # Check for key indicators that a game client is running:
+    # 1. Has valid player position
+    if hasattr(game_state, "player_position") and any(game_state.player_position):
+        return True
+    
+    # 2. Has non-empty zone information
+    if hasattr(game_state, "current_zone") and game_state.current_zone:
+        return True
+    
+    # 3. Has some UI elements detected
+    if hasattr(game_state, "minimap_data") and game_state.minimap_data:
+        return True
+    
+    # 4. Has valid player health/mana
+    if hasattr(game_state, "player_health") and game_state.player_health != 100.0:
+        return True
+        
+    # No indicators found - game client probably not running
+    return False
+
 def main():
     """Main entry point for the WoW AI Player"""
     logger = setup_logging()
@@ -53,60 +82,49 @@ def main():
         controller = Controller(config)
         
         # Initialize navigation system
-        navigation_system = NavigationSystem(config, screen_reader)
+        from src.knowledge.game_knowledge import GameKnowledge
+        knowledge = GameKnowledge(config)
+        navigation_system = NavigationSystem(config, knowledge)
         logger.info("Advanced navigation system initialized")
         
-        # Initialize economic intelligence system
-        economic_manager = EconomicManager(config)
-        logger.info("Economic intelligence system initialized")
+        # Initialize agent
+        agent = Agent(config, screen_reader, controller)
         
-        # Initialize agent with navigation system and economic intelligence
-        agent = Agent(config, screen_reader, controller, navigation_system, economic_manager=economic_manager)
+        # Set navigation system
+        agent.navigation_manager = navigation_system
         
         logger.info("All components initialized successfully")
         
         # Create required data directories if they don't exist
         data_dirs = [
-            "data/economic",
-            "data/economic/price_data",
-            "data/economic/resource_nodes",
-            "data/economic/recipes"
+            "data/game_knowledge",
+            "data/recordings",
+            "data/models/learning/plans"
         ]
         for directory in data_dirs:
             os.makedirs(directory, exist_ok=True)
         
         # Main loop
         logger.info("Entering main loop")
-        last_economic_update = time.time()
-        economic_update_interval = config.get("economic.update_interval", 3600)  # 1 hour default
+        
+        # Track if we've warned about no game client
+        client_warning_shown = False
         
         while True:
             # Process game state
             game_state = screen_reader.capture_game_state()
             
-            # Periodic economic data updates
-            current_time = time.time()
-            if current_time - last_economic_update > economic_update_interval:
-                logger.info("Performing periodic economic data update")
-                
-                # Update character info (gold, profession skills, etc.)
-                if "character_info" in game_state:
-                    economic_manager.update_character_info(
-                        level=game_state["character_info"].get("level", 60),
-                        gold=game_state["character_info"].get("gold", 0),
-                        profession_skills=game_state["character_info"].get("profession_skills", {})
-                    )
-                
-                # Scan inventory if available
-                if "inventory" in game_state:
-                    economic_manager.scan_inventory(game_state["inventory"])
-                
-                # Update auction house data if we're at the AH
-                if "at_auction_house" in game_state and game_state["at_auction_house"]:
-                    if "auction_data" in game_state:
-                        economic_manager.update_market_data(game_state["auction_data"])
-                
-                last_economic_update = current_time
+            # Check if a game client is actually running
+            if not is_game_client_running(game_state):
+                if not client_warning_shown:
+                    logger.warning("No World of Warcraft client detected - AI in standby mode")
+                    client_warning_shown = True
+                time.sleep(2.0)  # Sleep longer when no client is detected
+                continue
+            else:
+                if client_warning_shown:
+                    logger.info("World of Warcraft client detected - AI resuming normal operation")
+                    client_warning_shown = False
             
             # Decide on actions
             actions = agent.decide(game_state)

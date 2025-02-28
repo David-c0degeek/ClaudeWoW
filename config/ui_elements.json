@@ -1,0 +1,74 @@
+{
+    "player_frame": {
+        "x": 265,
+        "y": 43,
+        "width": 232,
+        "height": 100
+    },
+    "player_health_bar": {
+        "x": 106,
+        "y": 65,
+        "width": 180,
+        "height": 20
+    },
+    "target_name_text": {
+        "x": 1432,
+        "y": 43,
+        "width": 180,
+        "height": 20
+    },
+    "target_type_text": {
+        "x": 1432,
+        "y": 43,
+        "width": 180,
+        "height": 20
+    },
+    "target_buffs_area": {
+        "x": 1432,
+        "y": 43,
+        "width": 500,
+        "height": 35
+    },
+    "target_debuffs_area": {
+        "x": 1432,
+        "y": 79,
+        "width": 500,
+        "height": 35
+    },
+    "target_cast_bar": {
+        "x": 660,
+        "y": 450,
+        "width": 600,
+        "height": 32
+    },
+    "action_bars": {
+        "x": 632,
+        "y": 900,
+        "width": 656,
+        "height": 160
+    },
+    "minimap": {
+        "x": 1720,
+        "y": 43,
+        "width": 180,
+        "height": 180
+    },
+    "zone_text": {
+        "x": 1720,
+        "y": 25,
+        "width": 180,
+        "height": 18
+    },
+    "quest_tracker": {
+        "x": 1620,
+        "y": 250,
+        "width": 280,
+        "height": 400
+    },
+    "chat_window": {
+        "x": 20,
+        "y": 860,
+        "width": 480,
+        "height": 200
+    }
+}

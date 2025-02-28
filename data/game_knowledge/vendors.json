@@ -1,0 +1,100 @@
+{
+    "elwynn_general_store": {
+        "name": "Elwynn General Store",
+        "zone": "elwynn_forest",
+        "subzone": "goldshire",
+        "faction": "alliance",
+        "npc": "Andrew Krighton",
+        "location": {
+            "x": 41.5,
+            "y": 65.8
+        },
+        "items": [
+            {
+                "id": 2320,
+                "name": "Coarse Thread",
+                "price": 10,
+                "stock": "unlimited"
+            },
+            {
+                "id": 2321,
+                "name": "Fine Thread",
+                "price": 100,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4291,
+                "name": "Silken Thread",
+                "price": 500,
+                "stock": "unlimited"
+            },
+            {
+                "id": 2678,
+                "name": "Mild Spices",
+                "price": 10,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4470,
+                "name": "Simple Wood",
+                "price": 5,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4498,
+                "name": "Brown Leather Satchel",
+                "price": 25,
+                "stock": "unlimited"
+            }
+        ]
+    },
+    "razor_hill_supply": {
+        "name": "Razor Hill Supply",
+        "zone": "durotar",
+        "subzone": "razor_hill",
+        "faction": "horde",
+        "npc": "Uhgar",
+        "location": {
+            "x": 52.5,
+            "y": 41.6
+        },
+        "items": [
+            {
+                "id": 2320,
+                "name": "Coarse Thread",
+                "price": 10,
+                "stock": "unlimited"
+            },
+            {
+                "id": 2321,
+                "name": "Fine Thread",
+                "price": 100,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4291,
+                "name": "Silken Thread",
+                "price": 500,
+                "stock": "unlimited"
+            },
+            {
+                "id": 2678,
+                "name": "Mild Spices",
+                "price": 10,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4470,
+                "name": "Simple Wood",
+                "price": 5,
+                "stock": "unlimited"
+            },
+            {
+                "id": 4499,
+                "name": "Brown Leather Satchel",
+                "price": 25,
+                "stock": "unlimited"
+            }
+        ]
+    }
+}

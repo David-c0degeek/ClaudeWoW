@@ -1,0 +1,101 @@
+{
+    "elwynn_forest": {
+        "id": 1429,
+        "name": "Elwynn Forest",
+        "faction": "alliance",
+        "level_range": [
+            1,
+            10
+        ],
+        "adjacent_zones": [
+            "stormwind",
+            "westfall",
+            "redridge_mountains",
+            "duskwood"
+        ],
+        "flight_points": [
+            "stormwind"
+        ],
+        "main_city": "stormwind",
+        "notable_npcs": [
+            "Marshal Dughan",
+            "Hogger",
+            "Goldshire Guards"
+        ],
+        "notable_locations": [
+            {
+                "name": "Goldshire",
+                "type": "town",
+                "coords": {
+                    "x": 42.1,
+                    "y": 65.9
+                }
+            },
+            {
+                "name": "Northshire Abbey",
+                "type": "quest_hub",
+                "coords": {
+                    "x": 45.6,
+                    "y": 47.1
+                }
+            },
+            {
+                "name": "Fargodeep Mine",
+                "type": "mine",
+                "coords": {
+                    "x": 39.5,
+                    "y": 81.7
+                }
+            }
+        ]
+    },
+    "durotar": {
+        "id": 1411,
+        "name": "Durotar",
+        "faction": "horde",
+        "level_range": [
+            1,
+            10
+        ],
+        "adjacent_zones": [
+            "orgrimmar",
+            "the_barrens"
+        ],
+        "flight_points": [
+            "orgrimmar",
+            "razor_hill"
+        ],
+        "main_city": "orgrimmar",
+        "notable_npcs": [
+            "Foreman Thazz'ril",
+            "Zuljin Headhunters",
+            "Razormane Quilboars"
+        ],
+        "notable_locations": [
+            {
+                "name": "Razor Hill",
+                "type": "town",
+                "coords": {
+                    "x": 52.1,
+                    "y": 43.2
+                }
+            },
+            {
+                "name": "Valley of Trials",
+                "type": "starting_area",
+                "coords": {
+                    "x": 43.6,
+                    "y": 68.9
+                }
+            },
+            {
+                "name": "Tiragarde Keep",
+                "type": "elite_area",
+                "coords": {
+                    "x": 58.7,
+                    "y": 57.1
+                }
+            }
+        ]
+    }
+}

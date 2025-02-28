@@ -1,24 +1,31 @@
-"""
-Game Knowledge Module
+# src/knowledge/game_knowledge.py
 
-This module serves as a knowledge base for game information.
-"""
-
-import logging
-import json
 import os
+import json
+import logging
 import math
-import time
-from typing import Dict, List, Tuple, Any, Optional, Set
+from typing import Dict, List, Tuple, Any, Optional, Union
 
 class GameKnowledge:
     """
-    Knowledge base for World of Warcraft game information
+    This class manages game knowledge including items, quests, NPCs, zones, etc.
+    It loads data from JSON files and provides access methods.
     """
+    
+    def update(self, game_state):
+        """
+        Update knowledge with new game state information
+        
+        Args:
+            game_state: Current game state
+        """
+        # This method will be implemented to update knowledge from game state
+        # Currently just a stub to avoid errors
+        pass
     
     def __init__(self, config: Dict):
         """
-        Initialize the GameKnowledge
+        Initialize GameKnowledge
         
         Args:
             config: Configuration dictionary
@@ -26,120 +33,416 @@ class GameKnowledge:
         self.logger = logging.getLogger("wow_ai.knowledge.game_knowledge")
         self.config = config
         
-        # Initialize knowledge databases
-        self.zones = {}
-        self.npcs = {}
-        self.quests = {}
-        self.abilities = {}
-        self.items = {}
-        self.paths = {}
-        
-        # Initialize knowledge tracking
-        self.known_zones = set()
-        self.known_npcs = set()
-        self.known_quests = set()
-        
-        # Load knowledge from files
-        self._load_knowledge()
-        
-        # Runtime knowledge (learned during execution)
-        self.runtime_knowledge = {
-            "zones": {},
-            "npcs": {},
-            "quests": {},
-            "paths": {}
-        }
-        
-        self.logger.info("GameKnowledge initialized")
-    
-    def _load_knowledge(self) -> None:
-        """
-        Load knowledge from data files
-        """
-        # Get data directory
-        data_dir = os.path.join(
+        # Data directory
+        self.data_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
             "data", "game_knowledge"
         )
         
-        # Create directory if it doesn't exist
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-            self.logger.info(f"Created game knowledge directory: {data_dir}")
+        # Ensure data directory exists
+        os.makedirs(self.data_dir, exist_ok=True)
         
-        # Load zones data
-        self._load_json_file(os.path.join(data_dir, "zones.json"), "zones")
+        # Data storage
+        self.items = {}
+        self.quests = {}
+        self.npcs = {}
+        self.zones = {}
+        self.abilities = {}
+        self.professions = {}
+        self.vendors = {}
+        self.flight_paths = {}
+        self.instances = {}
+        self.emotes = {}
         
-        # Load NPCs data
-        self._load_json_file(os.path.join(data_dir, "npcs.json"), "npcs")
+        # Load data
+        self._load_data()
         
-        # Load quests data
-        self._load_json_file(os.path.join(data_dir, "quests.json"), "quests")
-        
-        # Load abilities data
-        self._load_json_file(os.path.join(data_dir, "abilities.json"), "abilities")
-        
-        # Load items data
-        self._load_json_file(os.path.join(data_dir, "items.json"), "items")
-        
-        # Load paths data
-        self._load_json_file(os.path.join(data_dir, "paths.json"), "paths")
-        
-        # Load instances data
-        self._load_json_file(os.path.join(data_dir, "instances.json"), "instances")
+        self.logger.info("GameKnowledge initialized")
     
-        # Load emotes data
-        self._load_json_file(os.path.join(data_dir, "emotes.json"), "emotes")
-    
-        # Load social responses data
-        self._load_json_file(os.path.join(data_dir, "social_responses.json"), "social_responses")
-
-    
-    def _load_json_file(self, file_path: str, data_type: str) -> None:
+    def _load_data(self) -> None:
         """
-        Load data from a JSON file
+        Load all game knowledge data
+        """
+        self._load_items()
+        self._load_quests()
+        self._load_npcs()
+        self._load_zones()
+        self._load_abilities()
+        self._load_professions()
+        self._load_vendors()
+        self._load_flight_paths()
+        self._load_instances()
+        self._load_emotes()
+    
+    def _load_items(self) -> None:
+        """
+        Load item data
+        """
+        file_path = os.path.join(self.data_dir, "items.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_items_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.items = json.load(f)
+                self.logger.info(f"Loaded {len(self.items)} items")
+        except Exception as e:
+            self.logger.error(f"Error loading items data: {e}")
+            # Create default data on error
+            self._create_default_items_data(file_path)
+    
+    def _load_quests(self) -> None:
+        """
+        Load quest data
+        """
+        file_path = os.path.join(self.data_dir, "quests.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_quests_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.quests = json.load(f)
+                self.logger.info(f"Loaded {len(self.quests)} quests")
+        except Exception as e:
+            self.logger.error(f"Error loading quests data: {e}")
+            # Create default data on error
+            self._create_default_quests_data(file_path)
+    
+    def _load_npcs(self) -> None:
+        """
+        Load NPC data
+        """
+        file_path = os.path.join(self.data_dir, "npcs.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_npcs_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.npcs = json.load(f)
+                self.logger.info(f"Loaded {len(self.npcs)} NPCs")
+        except Exception as e:
+            self.logger.error(f"Error loading NPCs data: {e}")
+            # Create default data on error
+            self._create_default_npcs_data(file_path)
+    
+    def _load_zones(self) -> None:
+        """
+        Load zone data
+        """
+        file_path = os.path.join(self.data_dir, "zones.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_zones_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.zones = json.load(f)
+                self.logger.info(f"Loaded {len(self.zones)} zones")
+        except Exception as e:
+            self.logger.error(f"Error loading zones data: {e}")
+            # Create default data on error
+            self._create_default_zones_data(file_path)
+    
+    def _load_abilities(self) -> None:
+        """
+        Load ability data
+        """
+        file_path = os.path.join(self.data_dir, "abilities.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_abilities_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.abilities = json.load(f)
+                self.logger.info(f"Loaded abilities for {len(self.abilities)} classes")
+        except Exception as e:
+            self.logger.error(f"Error loading abilities data: {e}")
+            # Create default data on error
+            self._create_default_abilities_data(file_path)
+    
+    def _load_professions(self) -> None:
+        """
+        Load profession data
+        """
+        file_path = os.path.join(self.data_dir, "professions.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_professions_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.professions = json.load(f)
+                self.logger.info(f"Loaded {len(self.professions)} professions")
+        except Exception as e:
+            self.logger.error(f"Error loading professions data: {e}")
+            # Create default data on error
+            self._create_default_professions_data(file_path)
+    
+    def _load_vendors(self) -> None:
+        """
+        Load vendor data
+        """
+        file_path = os.path.join(self.data_dir, "vendors.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_vendors_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.vendors = json.load(f)
+                self.logger.info(f"Loaded {len(self.vendors)} vendors")
+        except Exception as e:
+            self.logger.error(f"Error loading vendors data: {e}")
+            # Create default data on error
+            self._create_default_vendors_data(file_path)
+    
+    def _load_flight_paths(self) -> None:
+        """
+        Load flight path data
+        """
+        file_path = os.path.join(self.data_dir, "flight_paths.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_flight_paths_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.flight_paths = json.load(f)
+                self.logger.info(f"Loaded flight paths for {len(self.flight_paths)} factions")
+        except Exception as e:
+            self.logger.error(f"Error loading flight paths data: {e}")
+            # Create default data on error
+            self._create_default_flight_paths_data(file_path)
+    
+    def _load_instances(self) -> None:
+        """
+        Load instance data (dungeons/raids)
+        """
+        file_path = os.path.join(self.data_dir, "instances.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_instances_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.instances = json.load(f)
+                self.logger.info(f"Loaded {len(self.instances)} instances")
+        except Exception as e:
+            self.logger.error(f"Error loading instances data: {e}")
+            # Create default data on error
+            self._create_default_instances_data(file_path)
+    
+    def _load_emotes(self) -> None:
+        """
+        Load emote data
+        """
+        file_path = os.path.join(self.data_dir, "emotes.json")
+        
+        # Create default file if it doesn't exist
+        if not os.path.exists(file_path):
+            self._create_default_emotes_data(file_path)
+        
+        try:
+            with open(file_path, 'r') as f:
+                self.emotes = json.load(f)
+                self.logger.info(f"Loaded {len(self.emotes)} emotes")
+        except Exception as e:
+            self.logger.error(f"Error loading emotes data: {e}")
+            # Create default data on error
+            self._create_default_emotes_data(file_path)
+    
+    def _create_default_items_data(self, file_path: str) -> None:
+        """
+        Create default items data file
         
         Args:
-            file_path: Path to the JSON file
-            data_type: Type of data being loaded
+            file_path: Path to save the file
         """
-        try:
-            if os.path.exists(file_path):
-                with open(file_path, 'r') as f:
-                    data = json.load(f)
-                
-                # Store data in the appropriate attribute
-                if data_type == "zones":
-                    self.zones = data
-                elif data_type == "npcs":
-                    self.npcs = data
-                elif data_type == "quests":
-                    self.quests = data
-                elif data_type == "abilities":
-                    self.abilities = data
-                elif data_type == "items":
-                    self.items = data
-                elif data_type == "paths":
-                    self.paths = data
-                
-                self.logger.info(f"Loaded {len(data)} {data_type} from {file_path}")
-            else:
-                # Create empty data file
-                if data_type == "zones":
-                    self._create_default_zones_data(file_path)
-                elif data_type == "npcs":
-                    self._create_default_npcs_data(file_path)
-                elif data_type == "quests":
-                    self._create_default_quests_data(file_path)
-                elif data_type == "abilities":
-                    self._create_default_abilities_data(file_path)
-                elif data_type == "items":
-                    self._create_default_items_data(file_path)
-                elif data_type == "paths":
-                    self._create_default_paths_data(file_path)
+        default_data = {
+            "hearthstone": {
+                "id": 6948,
+                "name": "Hearthstone",
+                "type": "misc",
+                "quality": "common",
+                "level": 1,
+                "bind": "soulbound",
+                "unique": True,
+                "use": "Returns you to your home location.",
+                "cooldown": 3600
+            },
+            "linen_cloth": {
+                "id": 2589,
+                "name": "Linen Cloth",
+                "type": "trade",
+                "quality": "common",
+                "level": 1,
+                "bind": "none",
+                "unique": False,
+                "sell_price": 15
+            },
+            "copper_ore": {
+                "id": 2770,
+                "name": "Copper Ore",
+                "type": "trade",
+                "quality": "common",
+                "level": 1,
+                "bind": "none",
+                "unique": False,
+                "sell_price": 20
+            },
+            "light_leather": {
+                "id": 2318,
+                "name": "Light Leather",
+                "type": "trade",
+                "quality": "common",
+                "level": 1,
+                "bind": "none",
+                "unique": False,
+                "sell_price": 18
+            },
+            "copper_shortsword": {
+                "id": 2504,
+                "name": "Worn Shortsword",
+                "type": "weapon",
+                "subtype": "one-hand sword",
+                "quality": "common",
+                "level": 1,
+                "bind": "none",
+                "unique": False,
+                "damage": {"min": 2, "max": 4},
+                "speed": 1.8,
+                "dps": 1.67,
+                "stats": {},
+                "sell_price": 23
+            }
+        }
         
-        except Exception as e:
-            self.logger.error(f"Error loading {data_type} data from {file_path}: {e}")
+        self.items = default_data
+        
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
+        
+        self.logger.info(f"Created default items data at {file_path}")
+    
+    def _create_default_quests_data(self, file_path: str) -> None:
+        """
+        Create default quests data file
+        
+        Args:
+            file_path: Path to save the file
+        """
+        default_data = {
+            "defias_brotherhood": {
+                "id": 155,
+                "name": "The Defias Brotherhood",
+                "level": 14,
+                "min_level": 9,
+                "faction": "alliance",
+                "zone": "westfall",
+                "giver": "Gryan Stoutmantle",
+                "objectives": [
+                    "Kill 15 Defias Messenger",
+                    "Collect the Unsent Letter"
+                ],
+                "rewards": {
+                    "xp": 875,
+                    "gold": 25,
+                    "items": [
+                        {"id": 1006, "name": "Tough Leather Boots", "quality": "uncommon"},
+                        {"id": 1007, "name": "Studded Leather Belt", "quality": "uncommon"}
+                    ]
+                },
+                "follow_up": "The Defias Brotherhood (Part 2)"
+            },
+            "lazy_peons": {
+                "id": 5441,
+                "name": "Lazy Peons",
+                "level": 2,
+                "min_level": 1,
+                "faction": "horde",
+                "zone": "durotar",
+                "giver": "Foreman Thazz'ril",
+                "objectives": [
+                    "Use the Foreman's Blackjack on 5 Lazy Peons"
+                ],
+                "rewards": {
+                    "xp": 250,
+                    "gold": 5,
+                    "items": [
+                        {"id": 6267, "name": "Disciple's Pants", "quality": "common"}
+                    ]
+                },
+                "follow_up": "Thazz'ril's Pick"
+            }
+        }
+        
+        self.quests = default_data
+        
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
+        
+        self.logger.info(f"Created default quests data at {file_path}")
+    
+    def _create_default_npcs_data(self, file_path: str) -> None:
+        """
+        Create default NPCs data file
+        
+        Args:
+            file_path: Path to save the file
+        """
+        default_data = {
+            "hogger": {
+                "id": 448,
+                "name": "Hogger",
+                "level": 11,
+                "type": "elite",
+                "faction": "enemy",
+                "zone": "elwynn_forest",
+                "location": {"x": 25.2, "y": 78.5},
+                "hp": 500,
+                "abilities": ["Rushing Charge", "Eat", "Vicious Bite"],
+                "loot": [
+                    {"id": 1127, "name": "Chipped Boar Tusk", "drop_rate": 0.25},
+                    {"id": 3667, "name": "Ruined Pelt", "drop_rate": 0.15},
+                    {"id": 1114, "name": "Tough Jerky", "drop_rate": 0.3}
+                ],
+                "quest_related": ["Wanted: Hogger"]
+            },
+            "innkeeper_renee": {
+                "id": 6741,
+                "name": "Innkeeper Renee",
+                "level": 35,
+                "type": "normal",
+                "faction": "alliance",
+                "zone": "stormwind",
+                "location": {"x": 52.3, "y": 67.8},
+                "services": ["inn", "vendor", "food_drink"],
+                "gossip": [
+                    "Welcome to the Gilded Rose. May I help you?",
+                    "Looking for a place to stay? We have the softest beds in Stormwind!"
+                ]
+            }
+        }
+        
+        self.npcs = default_data
+        
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
+        
+        self.logger.info(f"Created default NPCs data at {file_path}")
     
     def _create_default_zones_data(self, file_path: str) -> None:
         """
@@ -150,31 +453,33 @@ class GameKnowledge:
         """
         default_data = {
             "elwynn_forest": {
+                "id": 1429,
                 "name": "Elwynn Forest",
-                "level_range": [1, 10],
                 "faction": "alliance",
-                "neighbors": ["westfall", "duskwood", "redridge_mountains"],
+                "level_range": [1, 10],
+                "adjacent_zones": ["stormwind", "westfall", "redridge_mountains", "duskwood"],
+                "flight_points": ["stormwind"],
                 "main_city": "stormwind",
-                "flight_paths": ["stormwind"],
-                "quest_hubs": ["northshire", "goldshire"],
-                "points_of_interest": [
-                    {"name": "Northshire Abbey", "position": [0, 0]},
-                    {"name": "Goldshire", "position": [100, 100]},
-                    {"name": "Stormwind", "position": [200, 200]}
+                "notable_npcs": ["Marshal Dughan", "Hogger", "Goldshire Guards"],
+                "notable_locations": [
+                    {"name": "Goldshire", "type": "town", "coords": {"x": 42.1, "y": 65.9}},
+                    {"name": "Northshire Abbey", "type": "quest_hub", "coords": {"x": 45.6, "y": 47.1}},
+                    {"name": "Fargodeep Mine", "type": "mine", "coords": {"x": 39.5, "y": 81.7}}
                 ]
             },
             "durotar": {
+                "id": 1411,
                 "name": "Durotar",
-                "level_range": [1, 10],
                 "faction": "horde",
-                "neighbors": ["the_barrens", "orgrimmar"],
+                "level_range": [1, 10],
+                "adjacent_zones": ["orgrimmar", "the_barrens"],
+                "flight_points": ["orgrimmar", "razor_hill"],
                 "main_city": "orgrimmar",
-                "flight_paths": ["orgrimmar"],
-                "quest_hubs": ["valley_of_trials", "razor_hill"],
-                "points_of_interest": [
-                    {"name": "Valley of Trials", "position": [0, 0]},
-                    {"name": "Razor Hill", "position": [100, 100]},
-                    {"name": "Orgrimmar", "position": [200, 200]}
+                "notable_npcs": ["Foreman Thazz'ril", "Zuljin Headhunters", "Razormane Quilboars"],
+                "notable_locations": [
+                    {"name": "Razor Hill", "type": "town", "coords": {"x": 52.1, "y": 43.2}},
+                    {"name": "Valley of Trials", "type": "starting_area", "coords": {"x": 43.6, "y": 68.9}},
+                    {"name": "Tiragarde Keep", "type": "elite_area", "coords": {"x": 58.7, "y": 57.1}}
                 ]
             }
         }
@@ -186,140 +491,6 @@ class GameKnowledge:
         
         self.logger.info(f"Created default zones data at {file_path}")
     
-    def _create_default_npcs_data(self, file_path: str) -> None:
-        """
-        Create default NPCs data file
-        
-        Args:
-            file_path: Path to save the file
-        """
-        default_data = {
-            "marshal_mcbride": {
-                "id": "marshal_mcbride",
-                "name": "Marshal McBride",
-                "type": "quest_giver",
-                "faction": "alliance",
-                "location": "northshire",
-                "position": [0, 0],
-                "gives_quests": ["a_threat_within"],
-                "accepts_quests": []
-            },
-            "deputy_willem": {
-                "id": "deputy_willem",
-                "name": "Deputy Willem",
-                "type": "quest_giver",
-                "faction": "alliance",
-                "location": "northshire",
-                "position": [10, 10],
-                "gives_quests": ["wolves_across_the_border"],
-                "accepts_quests": ["wolves_across_the_border"]
-            },
-            "inn_keeper_farley": {
-                "id": "inn_keeper_farley",
-                "name": "Innkeeper Farley",
-                "type": "innkeeper",
-                "faction": "alliance",
-                "location": "goldshire",
-                "position": [100, 100],
-                "gives_quests": [],
-                "accepts_quests": []
-            },
-            "smith_argus": {
-                "id": "smith_argus",
-                "name": "Smith Argus",
-                "type": "vendor",
-                "faction": "alliance",
-                "location": "goldshire",
-                "position": [110, 100],
-                "gives_quests": [],
-                "accepts_quests": []
-            }
-        }
-        
-        self.npcs = default_data
-        
-        with open(file_path, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        
-        self.logger.info(f"Created default NPCs data at {file_path}")
-    
-    def _create_default_quests_data(self, file_path: str) -> None:
-        """
-        Create default quests data file
-        
-        Args:
-            file_path: Path to save the file
-        """
-        default_data = {
-            "a_threat_within": {
-                "id": "a_threat_within",
-                "title": "A Threat Within",
-                "level": 1,
-                "faction": "alliance",
-                "zone": "elwynn_forest",
-                "location": "northshire",
-                "quest_giver": "marshal_mcbride",
-                "turn_in": "marshal_mcbride",
-                "pre_requisites": [],
-                "follow_up": ["beating_them_back"],
-                "description": "Speak with Marshal McBride.",
-                "objectives": [
-                    {
-                        "type": "interact",
-                        "target": "marshal_mcbride",
-                        "count": 1,
-                        "description": "Speak with Marshal McBride"
-                    }
-                ],
-                "rewards": {
-                    "xp": 40,
-                    "items": []
-                }
-            },
-            "wolves_across_the_border": {
-                "id": "wolves_across_the_border",
-                "title": "Wolves Across the Border",
-                "level": 1,
-                "faction": "alliance",
-                "zone": "elwynn_forest",
-                "location": "northshire",
-                "quest_giver": "deputy_willem",
-                "turn_in": "deputy_willem",
-                "pre_requisites": [],
-                "follow_up": [],
-                "description": "Kill Timber Wolves and bring their meat to Deputy Willem.",
-                "objectives": [
-                    {
-                        "type": "kill",
-                        "target": "timber_wolf",
-                        "count": 8,
-                        "description": "Kill 8 Timber Wolves"
-                    },
-                    {
-                        "type": "collect",
-                        "item": "wolf_meat",
-                        "count": 8,
-                        "description": "Collect 8 Wolf Meat",
-                        "source": "mob",
-                        "mob": "timber_wolf"
-                    }
-                ],
-                "rewards": {
-                    "xp": 100,
-                    "items": [
-                        {"id": "worn_short_sword", "chance": 1.0}
-                    ]
-                }
-            }
-        }
-        
-        self.quests = default_data
-        
-        with open(file_path, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        
-        self.logger.info(f"Created default quests data at {file_path}")
-    
     def _create_default_abilities_data(self, file_path: str) -> None:
         """
         Create default abilities data file
@@ -329,69 +500,59 @@ class GameKnowledge:
         """
         default_data = {
             "warrior": {
-                "battle_shout": {
-                    "name": "Battle Shout",
-                    "rank": 1,
+                "battle_stance": {
+                    "name": "Battle Stance",
                     "level": 1,
-                    "type": "buff",
-                    "resource": "rage",
-                    "cost": 10,
-                    "cooldown": 0,
-                    "effects": [
-                        {"type": "buff", "target": "party", "stat": "attack_power", "value": 25, "duration": 120}
-                    ]
+                    "type": "stance",
+                    "cost": "None",
+                    "cooldown": 1.5,
+                    "description": "A balanced combat stance.",
+                    "effect": "Allows use of Battle stance abilities."
                 },
                 "heroic_strike": {
                     "name": "Heroic Strike",
-                    "rank": 1,
                     "level": 1,
-                    "type": "ability",
-                    "resource": "rage",
+                    "type": "rage",
                     "cost": 15,
-                    "cooldown": 0,
-                    "effects": [
-                        {"type": "damage", "target": "enemy", "value": 11, "bonus_damage": 1.0}
-                    ]
+                    "cooldown": 1.5,
+                    "description": "A strong attack that increases damage.",
+                    "effect": "Instant. Adds 45 damage to your next attack.",
+                    "stance": "battle"
                 },
                 "charge": {
                     "name": "Charge",
-                    "rank": 1,
                     "level": 4,
-                    "type": "ability",
-                    "resource": "none",
+                    "type": "rage",
                     "cost": 0,
                     "cooldown": 15,
-                    "effects": [
-                        {"type": "movement", "distance": 25},
-                        {"type": "stun", "duration": 1},
-                        {"type": "resource", "resource": "rage", "value": 15}
-                    ]
+                    "description": "Charges an enemy, generates rage and stuns.",
+                    "effect": "Generates 9 rage, stuns for 1 sec.",
+                    "stance": "battle",
+                    "range": "8-25 yards"
                 }
             },
-            "paladin": {
-                "seal_of_righteousness": {
-                    "name": "Seal of Righteousness",
-                    "rank": 1,
+            "mage": {
+                "fireball": {
+                    "name": "Fireball",
                     "level": 1,
-                    "type": "buff",
-                    "resource": "mana",
-                    "cost": 50,
-                    "cooldown": 0,
-                    "effects": [
-                        {"type": "buff", "target": "self", "stat": "holy_damage", "value": 10, "duration": 30}
-                    ]
+                    "type": "mana",
+                    "cost": 30,
+                    "cooldown": 1.5,
+                    "cast_time": 2.5,
+                    "description": "Hurls a fiery ball that burns the enemy.",
+                    "effect": "Deals 18 to 24 Fire damage, plus 6 over 6 sec.",
+                    "range": "30 yards"
                 },
-                "judgement": {
-                    "name": "Judgement",
-                    "rank": 1,
+                "frostbolt": {
+                    "name": "Frostbolt",
                     "level": 4,
-                    "type": "ability",
-                    "resource": "mana",
-                    "cost": 40,
-                    "cooldown": 10,
-                    "effects": [
-                        {"type": "damage", "target": "enemy", "value": 20, "damage_type": "holy"}
-                    ]
+                    "type": "mana",
+                    "cost": 25,
+                    "cooldown": 1.5,
+                    "cast_time": 2.0,
+                    "description": "Launches a bolt of frost at the enemy.",
+                    "effect": "Deals 16 to 18 Frost damage and slows movement by 50% for 5 sec.",
+                    "range": "30 yards"
                 }
             }
         }
@@ -403,285 +564,720 @@ class GameKnowledge:
         
         self.logger.info(f"Created default abilities data at {file_path}")
     
-    def _create_default_items_data(self, file_path: str) -> None:
+    def _create_default_professions_data(self, file_path: str) -> None:
         """
-        Create default items data file
+        Create default professions data file
         
         Args:
             file_path: Path to save the file
         """
         default_data = {
-            "wolf_meat": {
-                "id": "wolf_meat",
-                "name": "Wolf Meat",
-                "type": "reagent",
-                "quality": "common",
-                "level": 1,
-                "source": ["timber_wolf"],
-                "drop_chance": 0.75,
-                "value": 5
-            },
-            "worn_short_sword": {
-                "id": "worn_short_sword",
-                "name": "Worn Short Sword",
-                "type": "weapon",
-                "subtype": "one_handed_sword",
-                "quality": "common",
-                "level": 1,
-                "stats": {
-                    "damage_min": 2,
-                    "damage_max": 4,
-                    "speed": 1.6
+            "alchemy": {
+                "name": "Alchemy",
+                "type": "crafting",
+                "required_skill": "none",
+                "trainer_locations": {
+                    "alliance": [
+                        {"zone": "stormwind", "npc": "Lilyssia Nightbreeze", "coords": {"x": 55.8, "y": 86.1}},
+                        {"zone": "ironforge", "npc": "Tally Berryfizz", "coords": {"x": 68.3, "y": 42.5}}
+                    ],
+                    "horde": [
+                        {"zone": "orgrimmar", "npc": "Yelmak", "coords": {"x": 56.2, "y": 33.8}},
+                        {"zone": "undercity", "npc": "Doctor Herbert Halsey", "coords": {"x": 47.5, "y": 73.9}}
+                    ]
                 },
-                "value": 38
-            }
-        }
-        
-        self.items = default_data
-        
-        with open(file_path, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        
-        self.logger.info(f"Created default items data at {file_path}")
-    
-    def _create_default_paths_data(self, file_path: str) -> None:
-        """
-        Create default paths data file
-        
-        Args:
-            file_path: Path to save the file
-        """
-        default_data = {
-            "northshire_to_goldshire": {
-                "start": "northshire",
-                "end": "goldshire",
-                "waypoints": [
-                    [0, 0],
-                    [50, 50],
-                    [100, 100]
-                ]
+                "recipes": {
+                    "minor_healing_potion": {
+                        "name": "Minor Healing Potion",
+                        "skill_required": 1,
+                        "reagents": [
+                            {"item": "peacebloom", "count": 1},
+                            {"item": "silverleaf", "count": 1},
+                            {"item": "empty_vial", "count": 1}
+                        ],
+                        "result": {"item": "minor_healing_potion", "count": 1}
+                    }
+                }
             },
-            "goldshire_to_stormwind": {
-                "start": "goldshire",
-                "end": "stormwind",
-                "waypoints": [
-                    [100, 100],
-                    [150, 150],
-                    [200, 200]
-                ]
-            }
-        }
-        
-        self.paths = default_data
-        
-        with open(file_path, 'w') as f:
-            json.dump(default_data, f, indent=4)
-        
-        self.logger.info(f"Created default paths data at {file_path}")
-    
-    def update(self, state: Any) -> None:
-        """
-        Update knowledge base with new information from game state
-        
-        Args:
-            state: Current game state
-        """
-        # Update known zones
-        if hasattr(state, "current_zone") and state.current_zone:
-            self._update_zone_knowledge(state.current_zone, state)
-        
-        # Update known NPCs
-        if hasattr(state, "nearby_entities") and state.nearby_entities:
-            for entity in state.nearby_entities:
-                if entity.get("type") == "npc":
-                    self._update_npc_knowledge(entity, state)
-        
-        # Update known quests
-        if hasattr(state, "active_quests") and state.active_quests:
-            for quest in state.active_quests:
-                self._update_quest_knowledge(quest, state)
-    
-    def _update_zone_knowledge(self, zone_name: str, state: Any) -> None:
-        """
-        Update knowledge about a zone
-        
-        Args:
-            zone_name: Name of the zone
-            state: Current game state
-        """
-        # Check if we already know this zone
-        if zone_name in self.known_zones:
-            return
-        
-        # Add to known zones
-        self.known_zones.add(zone_name)
-        
-        # Check if zone is in our database
-        if zone_name not in self.zones and zone_name not in self.runtime_knowledge["zones"]:
-            # Create new zone entry in runtime knowledge
-            self.runtime_knowledge["zones"][zone_name] = {
-                "name": zone_name,
-                "level_range": [1, 60],  # Default level range
-                "faction": "neutral",    # Default faction
-                "neighbors": [],
-                "main_city": "",
-                "flight_paths": [],
-                "quest_hubs": [],
-                "points_of_interest": []
-            }
-            
-            self.logger.info(f"Added new zone to knowledge base: {zone_name}")
-    
-    def _update_npc_knowledge(self, npc: Dict, state: Any) -> None:
-        """
-        Update knowledge about an NPC
-        
-        Args:
-            npc: NPC entity data
-            state: Current game state
-        """
-        npc_id = npc.get("id", "")
-        
-        if not npc_id:
-            return
-        
-        # Check if NPC is already known
-        if npc_id in self.known_npcs:
-            return
-        
-        # Add to known NPCs
-        self.known_npcs.add(npc_id)
-        
-        # Check if NPC is in our database
-        if npc_id not in self.npcs and npc_id not in self.runtime_knowledge["npcs"]:
-            # Create new NPC entry in runtime knowledge
-            current_zone = state.current_zone if hasattr(state, "current_zone") else ""
-            
-            self.runtime_knowledge["npcs"][npc_id] = {
-                "id": npc_id,
-                "name": npc.get("name", npc_id),
-                "type": npc.get("subtype", "npc"),
-                "faction": npc.get("faction", "neutral"),
-                "location": current_zone,
-                "position": npc.get("position", [0, 0]),
-                "gives_quests": [],
-                "accepts_quests": []
-            }
-            
-            self.logger.info(f"Added new NPC to knowledge base: {npc_id}")
-    
-    def _update_quest_knowledge(self, quest: Dict, state: Any) -> None:
-        """
-        Update knowledge about a quest
-        
-        Args:
-            quest: Quest data
-            state: Current game state
-        """
-        quest_title = quest.get("title", "")
-        
-        if not quest_title:
-            return
-        
-        # Check if quest is already known
-        if quest_title in self.known_quests:
-            return
-        
-        # Add to known quests
-        self.known_quests.add(quest_title)
-        
-        # Check if quest is in our database
-        if quest_title not in self.quests and quest_title not in self.runtime_knowledge["quests"]:
-            # Create new quest entry in runtime knowledge
-            current_zone = state.current_zone if hasattr(state, "current_zone") else ""
-            
-            self.runtime_knowledge["quests"][quest_title] = {
-                "id": quest_title.lower().replace(" ", "_"),
-                "title": quest_title,
-                "level": state.player_level if hasattr(state, "player_level") else 1,
-                "faction": "neutral",
-                "zone": current_zone,
-                "location": "",
-                "quest_giver": "",
-                "turn_in": "",
-                "pre_requisites": [],
-                "follow_up": [],
-                "description": "",
-                "objectives": [],
-                "rewards": {
-                    "xp": 0,
-                    "items": []
+            "mining": {
+                "name": "Mining",
+                "type": "gathering",
+                "required_skill": "none",
+                "trainer_locations": {
+                    "alliance": [
+                        {"zone": "stormwind", "npc": "Gelman Stonehand", "coords": {"x": 59.7, "y": 37.5}},
+                        {"zone": "ironforge", "npc": "Geofram Bouldertoe", "coords": {"x": 50.9, "y": 26.5}}
+                    ],
+                    "horde": [
+                        {"zone": "orgrimmar", "npc": "Makaru", "coords": {"x": 73.1, "y": 26.1}},
+                        {"zone": "thunder_bluff", "npc": "Brek Stonehoof", "coords": {"x": 36.2, "y": 59.8}}
+                    ]
+                },
+                "nodes": {
+                    "copper_vein": {
+                        "name": "Copper Vein",
+                        "skill_required": 1,
+                        "yields": [
+                            {"item": "copper_ore", "chance": 1.0},
+                            {"item": "rough_stone", "chance": 0.5},
+                            {"item": "tigerseye", "chance": 0.05}
+                        ],
+                        "typical_zones": ["elwynn_forest", "dun_morogh", "durotar", "tirisfal_glades"]
+                    }
                 }
             }
-            
-            # Try to extract objectives
-            if "objectives" in quest:
-                objectives = []
-                for obj in quest["objectives"]:
-                    obj_name = obj.get("name", "")
-                    current = obj.get("current", 0)
-                    total = obj.get("total", 1)
-                    
-                    objectives.append({
-                        "type": "unknown",
-                        "description": obj_name,
-                        "count": total
-                    })
-                
-                self.runtime_knowledge["quests"][quest_title]["objectives"] = objectives
-            
-            self.logger.info(f"Added new quest to knowledge base: {quest_title}")
+        }
+        
+        self.professions = default_data
+        
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
+        
+        self.logger.info(f"Created default professions data at {file_path}")
     
-    def get_combat_rotation(self, player_class: str, player_level: int) -> List[Dict]:
+    def _create_default_vendors_data(self, file_path: str) -> None:
         """
-        Get the optimal combat rotation for a class and level
+        Create default vendors data file
         
         Args:
-            player_class: Player's class
-            player_level: Player's level
-        
-        Returns:
-            List[Dict]: List of abilities to use in order
+            file_path: Path to save the file
         """
-        # Convert to lowercase for consistency
-        player_class = player_class.lower()
+        default_data = {
+            "elwynn_general_store": {
+                "name": "Elwynn General Store",
+                "zone": "elwynn_forest",
+                "subzone": "goldshire",
+                "faction": "alliance",
+                "npc": "Andrew Krighton",
+                "location": {"x": 41.5, "y": 65.8},
+                "items": [
+                    {"id": 2320, "name": "Coarse Thread", "price": 10, "stock": "unlimited"},
+                    {"id": 2321, "name": "Fine Thread", "price": 100, "stock": "unlimited"},
+                    {"id": 4291, "name": "Silken Thread", "price": 500, "stock": "unlimited"},
+                    {"id": 2678, "name": "Mild Spices", "price": 10, "stock": "unlimited"},
+                    {"id": 4470, "name": "Simple Wood", "price": 5, "stock": "unlimited"},
+                    {"id": 4498, "name": "Brown Leather Satchel", "price": 25, "stock": "unlimited"}
+                ]
+            },
+            "razor_hill_supply": {
+                "name": "Razor Hill Supply",
+                "zone": "durotar",
+                "subzone": "razor_hill",
+                "faction": "horde",
+                "npc": "Uhgar",
+                "location": {"x": 52.5, "y": 41.6},
+                "items": [
+                    {"id": 2320, "name": "Coarse Thread", "price": 10, "stock": "unlimited"},
+                    {"id": 2321, "name": "Fine Thread", "price": 100, "stock": "unlimited"},
+                    {"id": 4291, "name": "Silken Thread", "price": 500, "stock": "unlimited"},
+                    {"id": 2678, "name": "Mild Spices", "price": 10, "stock": "unlimited"},
+                    {"id": 4470, "name": "Simple Wood", "price": 5, "stock": "unlimited"},
+                    {"id": 4499, "name": "Brown Leather Satchel", "price": 25, "stock": "unlimited"}
+                ]
+            }
+        }
         
-        # Check if we have ability data for this class
-        if player_class not in self.abilities:
-            return []
+        self.vendors = default_data
         
-        class_abilities = self.abilities[player_class]
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
         
-        # Filter abilities by level
-        available_abilities = []
+        self.logger.info(f"Created default vendors data at {file_path}")
+    
+    def _create_default_flight_paths_data(self, file_path: str) -> None:
+        """
+        Create default flight paths data file
         
-        for ability_id, ability_data in class_abilities.items():
-            if ability_data.get("level", 1) <= player_level:
-                available_abilities.append({
-                    "name": ability_data.get("name"),
-                    "type": ability_data.get("type"),
-                    "cooldown": ability_data.get("cooldown", 0),
-                    "resource": ability_data.get("resource"),
-                    "cost": ability_data.get("cost", 0)
-                })
+        Args:
+            file_path: Path to save the file
+        """
+        default_data = {
+            "alliance": {
+                "stormwind": {
+                    "name": "Stormwind",
+                    "location": {"x": 66.3, "y": 62.1, "zone": "elwynn_forest"},
+                    "connections": [
+                        {"to": "sentinel_hill", "cost": 50, "time": 60},
+                        {"to": "lakeshire", "cost": 50, "time": 75},
+                        {"to": "darkshire", "cost": 70, "time": 90},
+                        {"to": "ironforge", "cost": 110, "time": 120}
+                    ]
+                },
+                "ironforge": {
+                    "name": "Ironforge",
+                    "location": {"x": 55.5, "y": 47.7, "zone": "dun_morogh"},
+                    "connections": [
+                        {"to": "stormwind", "cost": 110, "time": 120},
+                        {"to": "thelsamar", "cost": 50, "time": 60},
+                        {"to": "menethil_harbor", "cost": 75, "time": 90}
+                    ]
+                }
+            },
+            "horde": {
+                "orgrimmar": {
+                    "name": "Orgrimmar",
+                    "location": {"x": 45.1, "y": 63.9, "zone": "durotar"},
+                    "connections": [
+                        {"to": "crossroads", "cost": 50, "time": 60},
+                        {"to": "thunder_bluff", "cost": 110, "time": 180},
+                        {"to": "undercity", "cost": 225, "time": 300}
+                    ]
+                },
+                "thunder_bluff": {
+                    "name": "Thunder Bluff",
+                    "location": {"x": 46.8, "y": 49.9, "zone": "mulgore"},
+                    "connections": [
+                        {"to": "orgrimmar", "cost": 110, "time": 180},
+                        {"to": "crossroads", "cost": 70, "time": 120},
+                        {"to": "sun_rock_retreat", "cost": 60, "time": 90}
+                    ]
+                }
+            }
+        }
         
-        # Sort abilities based on optimal rotation
-        # This is a simplified version - a real implementation would have proper rotations
+        self.flight_paths = default_data
         
-        # Priority order: buffs first, then abilities by level (highest first)
-        buffs = [a for a in available_abilities if a.get("type") == "buff"]
-        abilities = [a for a in available_abilities if a.get("type") == "ability"]
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
         
-        # Sort buffs by name (alphabetical)
-        buffs.sort(key=lambda a: a.get("name", ""))
+        self.logger.info(f"Created default flight paths data at {file_path}")
+    
+    def get_item_info(self, item_name: str) -> Optional[Dict]:
+        """
+        Get information about an item
         
-        # Sort abilities by cooldown (longest first - assuming higher level abilities have longer cooldowns)
-        abilities.sort(key=lambda a: a.get("cooldown", 0), reverse=True)
+        Args:
+            item_name: Name or ID of the item
+            
+        Returns:
+            Dict: Item information or None if not found
+        """
+        # Normalize item name for key lookup
+        item_key = item_name.lower().replace(" ", "_")
         
-        # Combine: buffs first, then abilities
-        rotation = buffs + abilities
+        # Check if item exists directly
+        if item_key in self.items:
+            return self.items[item_key]
         
-        return rotation
+        # Try to find by ID if item_name is numeric
+        if str(item_name).isdigit():
+            item_id = int(item_name)
+            for key, data in self.items.items():
+                if data.get("id") == item_id:
+                    return data
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.items.items():
+            if data.get("name", "").lower() == item_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.items.items():
+            if item_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple items match '{item_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_quest_info(self, quest_name: str) -> Optional[Dict]:
+        """
+        Get information about a quest
+        
+        Args:
+            quest_name: Name or ID of the quest
+            
+        Returns:
+            Dict: Quest information or None if not found
+        """
+        # Normalize quest name for key lookup
+        quest_key = quest_name.lower().replace(" ", "_")
+        
+        # Check if quest exists directly
+        if quest_key in self.quests:
+            return self.quests[quest_key]
+        
+        # Try to find by ID if quest_name is numeric
+        if str(quest_name).isdigit():
+            quest_id = int(quest_name)
+            for key, data in self.quests.items():
+                if data.get("id") == quest_id:
+                    return data
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.quests.items():
+            if data.get("name", "").lower() == quest_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.quests.items():
+            if quest_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple quests match '{quest_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_npc_info(self, npc_name: str) -> Optional[Dict]:
+        """
+        Get information about an NPC
+        
+        Args:
+            npc_name: Name or ID of the NPC
+            
+        Returns:
+            Dict: NPC information or None if not found
+        """
+        # Normalize NPC name for key lookup
+        npc_key = npc_name.lower().replace(" ", "_")
+        
+        # Check if NPC exists directly
+        if npc_key in self.npcs:
+            return self.npcs[npc_key]
+        
+        # Try to find by ID if npc_name is numeric
+        if str(npc_name).isdigit():
+            npc_id = int(npc_name)
+            for key, data in self.npcs.items():
+                if data.get("id") == npc_id:
+                    return data
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.npcs.items():
+            if data.get("name", "").lower() == npc_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.npcs.items():
+            if npc_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple NPCs match '{npc_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_zone_info(self, zone_name: str) -> Optional[Dict]:
+        """
+        Get information about a zone
+        
+        Args:
+            zone_name: Name or ID of the zone
+            
+        Returns:
+            Dict: Zone information or None if not found
+        """
+        # Normalize zone name for key lookup
+        zone_key = zone_name.lower().replace(" ", "_")
+        
+        # Check if zone exists directly
+        if zone_key in self.zones:
+            return self.zones[zone_key]
+        
+        # Try to find by ID if zone_name is numeric
+        if str(zone_name).isdigit():
+            zone_id = int(zone_name)
+            for key, data in self.zones.items():
+                if data.get("id") == zone_id:
+                    return data
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.zones.items():
+            if data.get("name", "").lower() == zone_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.zones.items():
+            if zone_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple zones match '{zone_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_ability_info(self, class_name: str, ability_name: str) -> Optional[Dict]:
+        """
+        Get information about a class ability
+        
+        Args:
+            class_name: Class name
+            ability_name: Ability name
+            
+        Returns:
+            Dict: Ability information or None if not found
+        """
+        class_key = class_name.lower()
+        ability_key = ability_name.lower().replace(" ", "_")
+        
+        if class_key not in self.abilities:
+            return None
+        
+        class_abilities = self.abilities[class_key]
+        
+        # Check if ability exists directly
+        if ability_key in class_abilities:
+            return class_abilities[ability_key]
+        
+        # Try to find by full name (case insensitive)
+        for key, data in class_abilities.items():
+            if data.get("name", "").lower() == ability_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in class_abilities.items():
+            if ability_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple abilities match '{ability_name}' for class '{class_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_profession_info(self, profession_name: str) -> Optional[Dict]:
+        """
+        Get information about a profession
+        
+        Args:
+            profession_name: Profession name
+            
+        Returns:
+            Dict: Profession information or None if not found
+        """
+        # Normalize profession name for key lookup
+        profession_key = profession_name.lower().replace(" ", "_")
+        
+        # Check if profession exists directly
+        if profession_key in self.professions:
+            return self.professions[profession_key]
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.professions.items():
+            if data.get("name", "").lower() == profession_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.professions.items():
+            if profession_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple professions match '{profession_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_vendor_info(self, vendor_name: str) -> Optional[Dict]:
+        """
+        Get information about a vendor
+        
+        Args:
+            vendor_name: Vendor name
+            
+        Returns:
+            Dict: Vendor information or None if not found
+        """
+        # Normalize vendor name for key lookup
+        vendor_key = vendor_name.lower().replace(" ", "_")
+        
+        # Check if vendor exists directly
+        if vendor_key in self.vendors:
+            return self.vendors[vendor_key]
+        
+        # Try to find by full name (case insensitive)
+        for key, data in self.vendors.items():
+            if data.get("name", "").lower() == vendor_name.lower():
+                return data
+        
+        # Try to find by NPC name
+        for key, data in self.vendors.items():
+            if data.get("npc", "").lower() == vendor_name.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in self.vendors.items():
+            if vendor_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+            elif vendor_name.lower() in data.get("npc", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple vendors match '{vendor_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def get_flight_path_info(self, faction: str, location: str) -> Optional[Dict]:
+        """
+        Get information about a flight path
+        
+        Args:
+            faction: Alliance or Horde
+            location: Flight path location name
+            
+        Returns:
+            Dict: Flight path information or None if not found
+        """
+        # Normalize inputs
+        faction_key = faction.lower()
+        location_key = location.lower().replace(" ", "_")
+        
+        if faction_key not in self.flight_paths:
+            return None
+        
+        faction_fps = self.flight_paths[faction_key]
+        
+        # Check if flight path exists directly
+        if location_key in faction_fps:
+            return faction_fps[location_key]
+        
+        # Try to find by full name (case insensitive)
+        for key, data in faction_fps.items():
+            if data.get("name", "").lower() == location.lower():
+                return data
+        
+        # Try to find partial match
+        matches = []
+        for key, data in faction_fps.items():
+            if location.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple flight paths match '{location}' for faction '{faction}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
+    def calc_flight_path(self, faction: str, start: str, end: str) -> Optional[List[Dict]]:
+        """
+        Calculate the optimal flight path between two locations
+        
+        Args:
+            faction: Alliance or Horde
+            start: Starting flight point
+            end: Ending flight point
+            
+        Returns:
+            List[Dict]: List of flight segments or None if no path found
+        """
+        faction_key = faction.lower()
+        
+        if faction_key not in self.flight_paths:
+            return None
+        
+        faction_fps = self.flight_paths[faction_key]
+        
+        # Find the start and end flight points
+        start_fp = None
+        for key, data in faction_fps.items():
+            if data.get("name", "").lower() == start.lower() or key.lower() == start.lower():
+                start_fp = key
+                break
+        
+        end_fp = None
+        for key, data in faction_fps.items():
+            if data.get("name", "").lower() == end.lower() or key.lower() == end.lower():
+                end_fp = key
+                break
+        
+        if not start_fp or not end_fp:
+            return None
+        
+        # Use a simple Dijkstra's algorithm for pathfinding
+        # Initialize distances
+        distances = {fp: float('infinity') for fp in faction_fps}
+        distances[start_fp] = 0
+        previous = {fp: None for fp in faction_fps}
+        visited = set()
+        
+        while visited != set(faction_fps):
+            current = min([fp for fp in faction_fps if fp not in visited], key=lambda fp: distances[fp])
+            
+            if current == end_fp:
+                break
+                
+            visited.add(current)
+            
+            # Check connections
+            for connection in faction_fps[current].get("connections", []):
+                to_fp = connection.get("to")
+                if to_fp in faction_fps:
+                    cost = connection.get("cost", 0)
+                    if distances[current] + cost < distances[to_fp]:
+                        distances[to_fp] = distances[current] + cost
+                        previous[to_fp] = current
+        
+        # Construct path
+        if distances[end_fp] == float('infinity'):
+            return None  # No path found
+        
+        path = []
+        current = end_fp
+        while current != start_fp:
+            prev = previous[current]
+            # Find connection details
+            for conn in faction_fps[prev].get("connections", []):
+                if conn.get("to") == current:
+                    path.append({
+                        "from": prev,
+                        "to": current,
+                        "cost": conn.get("cost", 0),
+                        "time": conn.get("time", 0)
+                    })
+                    break
+            current = prev
+        
+        # Reverse to get start to end order
+        path.reverse()
+        
+        return path
+    
+    def calc_distance(self, pos1: Tuple[float, float], pos2: Tuple[float, float]) -> float:
+        """
+        Calculate the distance between two 2D positions
+        
+        Args:
+            pos1: First position (x, y)
+            pos2: Second position (x, y)
+            
+        Returns:
+            float: Distance between positions
+        """
+        return math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+        
+    def get_path(self, start: Tuple[float, float], end: Tuple[float, float], zone: str = "") -> Optional[List[Dict]]:
+        """
+        Get a predefined path between two positions
+        
+        Args:
+            start: Starting position (x, y)
+            end: Ending position (x, y)
+            zone: Current zone name
+            
+        Returns:
+            Optional[List[Dict]]: List of waypoint actions or None if no predefined path
+        """
+        self.logger.debug(f"Searching for path in zone {zone} from {start} to {end}")
+        
+        # This is a placeholder implementation
+        # In a full implementation, we would search a path database
+        
+        # For now, just return a direct path
+        return None
+    
+    def get_unexplored_areas(self, zone: str, explored_areas: set) -> List[Dict]:
+        """
+        Get unexplored areas in a zone
+        
+        Args:
+            zone: Zone name
+            explored_areas: Set of already explored area identifiers
+            
+        Returns:
+            List[Dict]: List of unexplored areas
+        """
+        # This is a placeholder implementation
+        
+        # In a full implementation, we would check a database of known areas
+        # against the explored_areas set
+        
+        return []
+        
+    def get_quest_turnin(self, quest_title: str) -> Optional[Dict]:
+        """
+        Get information about an NPC that can accept a completed quest
+        
+        Args:
+            quest_title: Title of the quest
+            
+        Returns:
+            Optional[Dict]: Quest turn-in NPC information or None if not found
+        """
+        # This is a placeholder implementation
+        
+        # In a real implementation, this would check the quest database
+        # to find the NPC that accepts the completed quest
+        
+        # Try to get quest data from known quests
+        quest_info = self.get_quest_info(quest_title)
+        
+        if quest_info and "giver" in quest_info:
+            # For simple quests, the turn-in NPC is often the same as the giver
+            giver_name = quest_info["giver"]
+            
+            # Look up the NPC info
+            npc_info = self.get_npc_info(giver_name)
+            
+            if npc_info:
+                return {
+                    "id": npc_info.get("id", 0),
+                    "name": npc_info.get("name", giver_name),
+                    "position": npc_info.get("location", {"x": 0, "y": 0}),
+                    "zone": npc_info.get("zone", "")
+                }
+        
+        return None
+        
+    def get_quest_giver(self, quest_title: str) -> Optional[Dict]:
+        """
+        Get information about the NPC that gives a quest
+        
+        Args:
+            quest_title: Title of the quest
+            
+        Returns:
+            Optional[Dict]: Quest giver NPC information or None if not found
+        """
+        # This is a placeholder implementation
+        
+        # Try to get quest data from known quests
+        quest_info = self.get_quest_info(quest_title)
+        
+        if quest_info and "giver" in quest_info:
+            giver_name = quest_info["giver"]
+            
+            # Look up the NPC info
+            npc_info = self.get_npc_info(giver_name)
+            
+            if npc_info:
+                return {
+                    "id": npc_info.get("id", 0),
+                    "name": npc_info.get("name", giver_name),
+                    "position": npc_info.get("location", {"x": 0, "y": 0}),
+                    "zone": npc_info.get("zone", "")
+                }
+        
+        return None
     
     def get_quest_objective_info(self, quest_title: str, objective_name: str) -> Optional[Dict]:
         """
@@ -690,491 +1286,115 @@ class GameKnowledge:
         Args:
             quest_title: Title of the quest
             objective_name: Name of the objective
-        
+            
         Returns:
             Optional[Dict]: Objective information or None if not found
         """
-        # Check standard knowledge base
-        if quest_title in self.quests:
-            quest_data = self.quests[quest_title]
-            
-            # Find matching objective
-            for objective in quest_data.get("objectives", []):
-                if objective.get("description", "") == objective_name:
-                    return objective
-                
-                # Try partial match
-                if objective_name.lower() in objective.get("description", "").lower():
-                    return objective
+        # This is a placeholder implementation
         
-        # Check runtime knowledge
-        if quest_title in self.runtime_knowledge["quests"]:
-            quest_data = self.runtime_knowledge["quests"][quest_title]
-            
-            # Find matching objective
-            for objective in quest_data.get("objectives", []):
-                if objective.get("description", "") == objective_name:
-                    return objective
-                
-                # Try partial match
-                if objective_name.lower() in objective.get("description", "").lower():
-                    return objective
+        # In a real implementation, this would look up detailed objective info
+        # from a quest database
         
-        # If not found, try to infer objective type from name
-        obj_type = self._infer_objective_type(objective_name)
-        
-        # Create a basic objective info
-        if obj_type:
-            return {
-                "type": obj_type,
-                "description": objective_name,
-                "target": self._extract_target_from_objective(objective_name),
-                "count": 1
-            }
-        
-        return None
-    
-    def _infer_objective_type(self, objective_name: str) -> Optional[str]:
-        """
-        Infer the type of an objective from its name
-        
-        Args:
-            objective_name: Name of the objective
-        
-        Returns:
-            Optional[str]: Inferred objective type or None
-        """
-        objective_name = objective_name.lower()
-        
-        # Check for kill objectives
-        kill_keywords = ["kill", "slay", "defeat", "destroy"]
-        for keyword in kill_keywords:
-            if keyword in objective_name:
-                return "kill"
-        
-        # Check for collection objectives
-        collect_keywords = ["collect", "gather", "find", "obtain", "bring", "retrieve"]
-        for keyword in collect_keywords:
-            if keyword in objective_name:
-                return "collect"
-        
-        # Check for interaction objectives
-        interact_keywords = ["speak", "talk", "meet", "activate", "use", "click", "interact"]
-        for keyword in interact_keywords:
-            if keyword in objective_name:
-                return "interact"
-        
-        # Check for exploration objectives
-        explore_keywords = ["explore", "discover", "investigate", "scout"]
-        for keyword in explore_keywords:
-            if keyword in objective_name:
-                return "explore"
-        
-        # Default to generic objective
-        return "interact"
-    
-    def _extract_target_from_objective(self, objective_name: str) -> str:
-        """
-        Extract the target name from an objective description
-        
-        Args:
-            objective_name: Name of the objective
-        
-        Returns:
-            str: Extracted target name
-        """
-        objective_name = objective_name.lower()
-        
-        # Try to find the most specific target name
-        # This is a very simplified implementation
-        
-        # Check for patterns like "Kill X", "Collect Y", etc.
-        patterns = [
-            "kill ", "slay ", "defeat ", "destroy ",  # Kill patterns
-            "collect ", "gather ", "find ", "obtain ", "bring ", "retrieve ",  # Collect patterns
-            "speak to ", "talk to ", "meet with "  # Interact patterns
-        ]
-        
-        for pattern in patterns:
-            if pattern in objective_name:
-                # Get the part after the pattern
-                target = objective_name.split(pattern)[1].strip()
-                
-                # Clean up by removing anything after certain words
-                end_markers = [" and", " or", " from", " in", " at", " for", " to"]
-                for marker in end_markers:
-                    if marker in target:
-                        target = target.split(marker)[0].strip()
-                
-                return target
-        
-        # If no pattern matched, just return the whole name
-        return objective_name
-    
-    def get_path(self, start: Tuple[float, float], end: Tuple[float, float], 
-                zone: str = "") -> List[Tuple[float, float]]:
-        """
-        Get a path between two points
-        
-        Args:
-            start: Starting position (x, y)
-            end: Ending position (x, y)
-            zone: Zone name (optional)
-        
-        Returns:
-            List[Tuple[float, float]]: List of waypoints
-        """
-        # Check if we have a predefined path between these points
-        for path_id, path_data in self.paths.items():
-            path_start = tuple(path_data.get("waypoints", [[0, 0]])[0])
-            path_end = tuple(path_data.get("waypoints", [[0, 0]])[-1])
-            
-            # Check if this path matches our start and end
-            start_distance = self._calculate_distance(start, path_start)
-            end_distance = self._calculate_distance(end, path_end)
-            
-            # If the path approximately matches (within 50 units)
-            if start_distance < 50 and end_distance < 50:
-                return [tuple(wp) for wp in path_data.get("waypoints", [])]
-        
-        # Check runtime knowledge paths
-        for path_id, path_data in self.runtime_knowledge["paths"].items():
-            path_start = tuple(path_data.get("waypoints", [[0, 0]])[0])
-            path_end = tuple(path_data.get("waypoints", [[0, 0]])[-1])
-            
-            # Check if this path matches our start and end
-            start_distance = self._calculate_distance(start, path_start)
-            end_distance = self._calculate_distance(end, path_end)
-            
-            # If the path approximately matches (within 50 units)
-            if start_distance < 50 and end_distance < 50:
-                return [tuple(wp) for wp in path_data.get("waypoints", [])]
-        
-        # If no predefined path, create a simple direct path
-        # In a real implementation, this would use A* pathfinding with terrain data
-        
-        # For simplicity, just return a straight line with a few waypoints
-        path = [start]
-        
-        # Calculate distance and direction
-        dx = end[0] - start[0]
-        dy = end[1] - start[1]
-        distance = math.sqrt(dx*dx + dy*dy)
-        
-        # Create waypoints along the path
-        num_waypoints = max(2, int(distance / 50))  # One waypoint per 50 units
-        
-        for i in range(1, num_waypoints):
-            t = i / num_waypoints
-            waypoint = (
-                start[0] + dx * t,
-                start[1] + dy * t
-            )
-            path.append(waypoint)
-        
-        path.append(end)
-        
-        # Remember this path for future use
-        path_id = f"path_{len(self.runtime_knowledge['paths']) + 1}"
-        self.runtime_knowledge["paths"][path_id] = {
-            "waypoints": [[wp[0], wp[1]] for wp in path],
-            "zone": zone
+        return {
+            "type": "unknown",
+            "description": objective_name,
+            "location": {"x": 0, "y": 0}  # Default location
         }
-        
-        return path
-    
-    def get_quest_giver(self, quest_title: str) -> Optional[Dict]:
-        """
-        Get information about a quest giver
-        
-        Args:
-            quest_title: Title of the quest
-        
-        Returns:
-            Optional[Dict]: Quest giver information or None if not found
-        """
-        # Check standard knowledge base
-        if quest_title in self.quests:
-            quest_data = self.quests[quest_title]
-            quest_giver_id = quest_data.get("quest_giver", "")
-            
-            if quest_giver_id and quest_giver_id in self.npcs:
-                return self.npcs[quest_giver_id]
-        
-        # Check runtime knowledge
-        if quest_title in self.runtime_knowledge["quests"]:
-            quest_data = self.runtime_knowledge["quests"][quest_title]
-            quest_giver_id = quest_data.get("quest_giver", "")
-            
-            if quest_giver_id:
-                if quest_giver_id in self.npcs:
-                    return self.npcs[quest_giver_id]
-                elif quest_giver_id in self.runtime_knowledge["npcs"]:
-                    return self.runtime_knowledge["npcs"][quest_giver_id]
-        
-        return None
-    
-    def get_quest_turnin(self, quest_title: str) -> Optional[Dict]:
-        """
-        Get information about a quest turn-in NPC
-        
-        Args:
-            quest_title: Title of the quest
-        
-        Returns:
-            Optional[Dict]: Quest turn-in information or None if not found
-        """
-        # Check standard knowledge base
-        if quest_title in self.quests:
-            quest_data = self.quests[quest_title]
-            turnin_id = quest_data.get("turn_in", "")
-            
-            if turnin_id and turnin_id in self.npcs:
-                return self.npcs[turnin_id]
-        
-        # Check runtime knowledge
-        if quest_title in self.runtime_knowledge["quests"]:
-            quest_data = self.runtime_knowledge["quests"][quest_title]
-            turnin_id = quest_data.get("turn_in", "")
-            
-            if turnin_id:
-                if turnin_id in self.npcs:
-                    return self.npcs[turnin_id]
-                elif turnin_id in self.runtime_knowledge["npcs"]:
-                    return self.runtime_knowledge["npcs"][turnin_id]
-        
-        # If no specific turn-in, return quest giver (most quests are turned in to the same NPC)
-        return self.get_quest_giver(quest_title)
-    
-    def get_quest_givers(self, zone: str) -> List[Dict]:
-        """
-        Get all quest givers in a zone
-        
-        Args:
-            zone: Zone name
-        
-        Returns:
-            List[Dict]: List of quest giver information
-        """
-        quest_givers = []
-        
-        # Check standard knowledge base
-        for npc_id, npc_data in self.npcs.items():
-            if npc_data.get("location", "") == zone and npc_data.get("gives_quests", []):
-                quest_givers.append(npc_data)
-        
-        # Check runtime knowledge
-        for npc_id, npc_data in self.runtime_knowledge["npcs"].items():
-            if npc_data.get("location", "") == zone and npc_data.get("gives_quests", []):
-                # Check if this NPC is already in the list
-                if not any(qg.get("id", "") == npc_id for qg in quest_givers):
-                    quest_givers.append(npc_data)
-        
-        return quest_givers
-    
-    def get_nearest_vendor(self, zone: str, position: Tuple[float, float]) -> Optional[Dict]:
-        """
-        Get the nearest vendor in a zone
-        
-        Args:
-            zone: Zone name
-            position: Current position (x, y)
-        
-        Returns:
-            Optional[Dict]: Nearest vendor information or None if not found
-        """
-        vendors = []
-        
-        # Check standard knowledge base
-        for npc_id, npc_data in self.npcs.items():
-            if npc_data.get("location", "") == zone and npc_data.get("type", "") == "vendor":
-                vendors.append(npc_data)
-        
-        # Check runtime knowledge
-        for npc_id, npc_data in self.runtime_knowledge["npcs"].items():
-            if npc_data.get("location", "") == zone and npc_data.get("type", "") == "vendor":
-                # Check if this NPC is already in the list
-                if not any(v.get("id", "") == npc_id for v in vendors):
-                    vendors.append(npc_data)
-        
-        if not vendors:
-            return None
-        
-        # Find the nearest vendor
-        nearest_vendor = None
-        nearest_distance = float('inf')
-        
-        for vendor in vendors:
-            vendor_position = vendor.get("position", [0, 0])
-            distance = self._calculate_distance(position, tuple(vendor_position))
-            
-            if distance < nearest_distance:
-                nearest_distance = distance
-                nearest_vendor = vendor
-        
-        return nearest_vendor
-    
-    def get_unexplored_areas(self, zone: str, explored_areas: Set[str] = None) -> List[Dict]:
-        """
-        Get unexplored areas in a zone
-        
-        Args:
-            zone: Zone name
-            explored_areas: Set of already explored area names
-        
-        Returns:
-            List[Dict]: List of unexplored areas
-        """
-        if explored_areas is None:
-            explored_areas = set()
-        
-        unexplored = []
-        
-        # Check standard knowledge base
-        if zone in self.zones:
-            zone_data = self.zones[zone]
-            
-            # Check points of interest
-            for poi in zone_data.get("points_of_interest", []):
-                poi_name = poi.get("name", "")
-                
-                if poi_name and poi_name not in explored_areas:
-                    unexplored.append({
-                        "id": poi_name.lower().replace(" ", "_"),
-                        "name": poi_name,
-                        "position": tuple(poi.get("position", [0, 0])),
-                        "type": "poi"
-                    })
-            
-            # Check quest hubs
-            for hub in zone_data.get("quest_hubs", []):
-                if hub not in explored_areas:
-                    # Find a position for this hub
-                    hub_position = [0, 0]
-                    
-                    # Check if we have any NPCs in this hub
-                    for npc_id, npc_data in self.npcs.items():
-                        if npc_data.get("location", "") == hub:
-                            hub_position = npc_data.get("position", [0, 0])
-                            break
-                    
-                    unexplored.append({
-                        "id": hub,
-                        "name": hub.replace("_", " ").title(),
-                        "position": tuple(hub_position),
-                        "type": "quest_hub"
-                    })
-        
-        # If no unexplored areas found, return an empty list
-        return unexplored
-    
-    def _calculate_distance(self, pos1: Tuple[float, float], pos2: Tuple[float, float]) -> float:
-        """
-        Calculate distance between two positions
-        
-        Args:
-            pos1: First position (x, y)
-            pos2: Second position (x, y)
-        
-        Returns:
-            float: Distance between positions
-        """
-        return math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
     
     def _create_default_instances_data(self, file_path: str) -> None:
-    """
-    Create default instances data file
-    
-    Args:
-        file_path: Path to save the file
-    """
-    default_data = {
-        "deadmines": {
-            "name": "Deadmines",
-            "level_range": [15, 25],
-            "faction": "both",
-            "bosses": [
-                {
-                    "name": "Rhahk'Zor",
-                    "strategy": "Simple first boss. Tank and spank."
-                },
-                {
-                    "name": "Sneed",
-                    "strategy": "Kill the Shredder first, then Sneed will come out."
-                },
-                {
-                    "name": "Gilnid",
-                    "strategy": "Kill the adds first, then focus on the boss."
-                },
-                {
-                    "name": "Mr. Smite",
-                    "strategy": "He stuns at health thresholds and switches weapons. Save cooldowns for after stuns."
-                },
-                {
-                    "name": "Captain Greenskin",
-                    "strategy": "Tank adds away from the group, focus down the boss."
-                },
-                {
-                    "name": "Edwin VanCleef",
-                    "strategy": "He summons adds at low health. Save cooldowns for this phase."
-                }
-            ],
-            "tips": [
-                "Watch for patrols in the foundry area.",
-                "Be careful of the goblin engineers, they can call for help.",
-                "The shortcut through the side tunnel can save time.",
-                "After Mr. Smite, you can jump down to skip trash."
-            ]
-        },
-        "wailing_caverns": {
-            "name": "Wailing Caverns",
-            "level_range": [15, 25],
-            "faction": "both",
-            "bosses": [
-                {
-                    "name": "Lady Anacondra",
-                    "strategy": "Interrupt her Sleep spell. Tank and spank otherwise."
-                },
-                {
-                    "name": "Lord Cobrahn",
-                    "strategy": "He will transform into a snake at low health. Increased damage, so save defensives."
-                },
-                {
-                    "name": "Kresh",
-                    "strategy": "Optional boss. Simple tank and spank fight in the water."
-                },
-                {
-                    "name": "Lord Pythas",
-                    "strategy": "Interrupt his healing spell. Otherwise tank and spank."
-                },
-                {
-                    "name": "Skum",
-                    "strategy": "Optional boss. Fights in water. Can charge, so stay close."
-                },
-                {
-                    "name": "Lord Serpentis",
-                    "strategy": "Focuses random targets. Healers be aware."
-                },
-                {
-                    "name": "Verdan the Everliving",
-                    "strategy": "Final boss. Can knock players back and stun. Tank against a wall."
-                }
-            ],
-            "tips": [
-                "The dungeon is a maze. Follow the marked path or you'll get lost.",
-                "There are four Fanglord bosses that must be killed before awakening Naralex.",
-                "Deviate Faerie Dragons can put everyone to sleep. Kill them quickly.",
-                "After all bosses, talk to the Disciple to start the final event."
-            ]
+        """
+        Create default instances data file
+        
+        Args:
+            file_path: Path to save the file
+        """
+        default_data = {
+            "deadmines": {
+                "name": "Deadmines",
+                "level_range": [15, 25],
+                "faction": "both",
+                "bosses": [
+                    {
+                        "name": "Rhahk'Zor",
+                        "strategy": "Simple first boss. Tank and spank."
+                    },
+                    {
+                        "name": "Sneed",
+                        "strategy": "Kill the Shredder first, then Sneed will come out."
+                    },
+                    {
+                        "name": "Gilnid",
+                        "strategy": "Kill the adds first, then focus on the boss."
+                    },
+                    {
+                        "name": "Mr. Smite",
+                        "strategy": "He stuns at health thresholds and switches weapons. Save cooldowns for after stuns."
+                    },
+                    {
+                        "name": "Captain Greenskin",
+                        "strategy": "Tank adds away from the group, focus down the boss."
+                    },
+                    {
+                        "name": "Edwin VanCleef",
+                        "strategy": "He summons adds at low health. Save cooldowns for this phase."
+                    }
+                ],
+                "tips": [
+                    "Watch for patrols in the foundry area.",
+                    "Be careful of the goblin engineers, they can call for help.",
+                    "The shortcut through the side tunnel can save time.",
+                    "After Mr. Smite, you can jump down to skip trash."
+                ]
+            },
+            "wailing_caverns": {
+                "name": "Wailing Caverns",
+                "level_range": [15, 25],
+                "faction": "both",
+                "bosses": [
+                    {
+                        "name": "Lady Anacondra",
+                        "strategy": "Interrupt her Sleep spell. Tank and spank otherwise."
+                    },
+                    {
+                        "name": "Lord Cobrahn",
+                        "strategy": "He will transform into a snake at low health. Increased damage, so save defensives."
+                    },
+                    {
+                        "name": "Kresh",
+                        "strategy": "Optional boss. Simple tank and spank fight in the water."
+                    },
+                    {
+                        "name": "Lord Pythas",
+                        "strategy": "Interrupt his healing spell. Otherwise tank and spank."
+                    },
+                    {
+                        "name": "Skum",
+                        "strategy": "Optional boss. Fights in water. Can charge, so stay close."
+                    },
+                    {
+                        "name": "Lord Serpentis",
+                        "strategy": "Focuses random targets. Healers be aware."
+                    },
+                    {
+                        "name": "Verdan the Everliving",
+                        "strategy": "Final boss. Can knock players back and stun. Tank against a wall."
+                    }
+                ],
+                "tips": [
+                    "The dungeon is a maze. Follow the marked path or you'll get lost.",
+                    "There are four Fanglord bosses that must be killed before awakening Naralex.",
+                    "Deviate Faerie Dragons can put everyone to sleep. Kill them quickly.",
+                    "After all bosses, talk to the Disciple to start the final event."
+                ]
+            }
         }
-    }
-    
-    self.instances = default_data
-    
-    with open(file_path, 'w') as f:
-        json.dump(default_data, f, indent=4)
-    
-    self.logger.info(f"Created default instances data at {file_path}")
+        
+        self.instances = default_data
+        
+        with open(file_path, 'w') as f:
+            json.dump(default_data, f, indent=4)
+        
+        self.logger.info(f"Created default instances data at {file_path}")
 
     def _create_default_emotes_data(self, file_path: str) -> None:
         """
@@ -1208,73 +1428,68 @@ class GameKnowledge:
         Get information about a dungeon/raid instance
         
         Args:
-            instance_name: Name of the instance
-        
+            instance_name: Instance name
+            
         Returns:
-            Optional[Dict]: Instance information or None if not found
+            Dict: Instance information or None if not found
         """
-        # Normalize the instance name
-        instance_name = instance_name.lower().replace(' ', '_')
+        # Normalize instance name for key lookup
+        instance_key = instance_name.lower().replace(" ", "_")
         
-        # Check standard knowledge base
-        if hasattr(self, 'instances') and instance_name in self.instances:
-            return self.instances[instance_name]
+        # Check if instance exists directly
+        if instance_key in self.instances:
+            return self.instances[instance_key]
         
-        # Check runtime knowledge
-        if "instances" in self.runtime_knowledge and instance_name in self.runtime_knowledge["instances"]:
-            return self.runtime_knowledge["instances"][instance_name]
+        # Try to find by full name (case insensitive)
+        for key, data in self.instances.items():
+            if data.get("name", "").lower() == instance_name.lower():
+                return data
         
-        return None 
-
+        # Try to find partial match
+        matches = []
+        for key, data in self.instances.items():
+            if instance_name.lower() in data.get("name", "").lower():
+                matches.append(data)
+        
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple instances match '{instance_name}': {[m.get('name') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None
+    
     def get_emote_info(self, emote_name: str) -> Optional[Dict]:
         """
         Get information about an emote
         
         Args:
-            emote_name: Name of the emote
-        
+            emote_name: Emote name or command
+            
         Returns:
-            Optional[Dict]: Emote information or None if not found
+            Dict: Emote information or None if not found
         """
-        # Normalize the emote name
-        emote_name = emote_name.lower()
+        # Normalize emote name for key lookup
+        emote_key = emote_name.lower().replace(" ", "_")
         
-        # Check standard knowledge base
-        if hasattr(self, 'emotes') and emote_name in self.emotes:
-            return self.emotes[emote_name]
+        # Strip leading slash if present
+        if emote_key.startswith("/"):
+            emote_key = emote_key[1:]
         
-        return None 
-
-    def get_social_response(self, category: str, context: Dict = None) -> Optional[str]:
-        """
-        Get an appropriate social response for a given category
+        # Check if emote exists directly
+        if emote_key in self.emotes:
+            return self.emotes[emote_key]
         
-        Args:
-            category: Response category
-            context: Context information (optional)
+        # Try to find partial match
+        matches = []
+        for key, data in self.emotes.items():
+            if emote_key in key:
+                matches.append({**data, "command": key})
         
-        Returns:
-            Optional[str]: Response text or None if not found
-        """
-        if not hasattr(self, 'social_responses'):
-            return None
-        
-        if category not in self.social_responses:
-            return None
-        
-        responses = self.social_responses[category]
-        if not responses:
-            return None
-        
-        # Select a random response
-        response_template = random.choice(responses)
-        
-        # Apply context if provided
-        if context:
-            try:
-                return response_template.format(**context)
-            except KeyError:
-                # If formatting fails, return the template as-is
-                return response_template
-        else:
-            return response_template
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            self.logger.warning(f"Multiple emotes match '{emote_name}': {[m.get('command') for m in matches]}")
+            return matches[0]  # Return first match with a warning
+            
+        return None

@@ -1,0 +1,111 @@
+{
+    "alliance": {
+        "stormwind": {
+            "name": "Stormwind",
+            "location": {
+                "x": 66.3,
+                "y": 62.1,
+                "zone": "elwynn_forest"
+            },
+            "connections": [
+                {
+                    "to": "sentinel_hill",
+                    "cost": 50,
+                    "time": 60
+                },
+                {
+                    "to": "lakeshire",
+                    "cost": 50,
+                    "time": 75
+                },
+                {
+                    "to": "darkshire",
+                    "cost": 70,
+                    "time": 90
+                },
+                {
+                    "to": "ironforge",
+                    "cost": 110,
+                    "time": 120
+                }
+            ]
+        },
+        "ironforge": {
+            "name": "Ironforge",
+            "location": {
+                "x": 55.5,
+                "y": 47.7,
+                "zone": "dun_morogh"
+            },
+            "connections": [
+                {
+                    "to": "stormwind",
+                    "cost": 110,
+                    "time": 120
+                },
+                {
+                    "to": "thelsamar",
+                    "cost": 50,
+                    "time": 60
+                },
+                {
+                    "to": "menethil_harbor",
+                    "cost": 75,
+                    "time": 90
+                }
+            ]
+        }
+    },
+    "horde": {
+        "orgrimmar": {
+            "name": "Orgrimmar",
+            "location": {
+                "x": 45.1,
+                "y": 63.9,
+                "zone": "durotar"
+            },
+            "connections": [
+                {
+                    "to": "crossroads",
+                    "cost": 50,
+                    "time": 60
+                },
+                {
+                    "to": "thunder_bluff",
+                    "cost": 110,
+                    "time": 180
+                },
+                {
+                    "to": "undercity",
+                    "cost": 225,
+                    "time": 300
+                }
+            ]
+        },
+        "thunder_bluff": {
+            "name": "Thunder Bluff",
+            "location": {
+                "x": 46.8,
+                "y": 49.9,
+                "zone": "mulgore"
+            },
+            "connections": [
+                {
+                    "to": "orgrimmar",
+                    "cost": 110,
+                    "time": 180
+                },
+                {
+                    "to": "crossroads",
+                    "cost": 70,
+                    "time": 120
+                },
+                {
+                    "to": "sun_rock_retreat",
+                    "cost": 60,
+                    "time": 90
+                }
+            ]
+        }
+    }
+}

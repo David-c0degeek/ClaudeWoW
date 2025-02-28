@@ -63,6 +63,16 @@ class NavigationManager:
         Returns:
             List[Tuple[float, float]]: List of waypoints
         """
+        # Get current position
+        if hasattr(state, "player_position"):
+            start = state.player_position
+        else:
+            self.logger.warning("Player position not found in game state")
+            # Return basic movement toward destination
+            return [{"type": "move", "position": destination, "description": "Move to destination (fallback)"}]
+            
+        end = destination
+        
         # Check if we can query the knowledge base for a predefined path
         zone = state.current_zone if hasattr(state, "current_zone") else ""
         knowledge_path = self.knowledge.get_path(start, end, zone)

@@ -1,0 +1,61 @@
+{
+    "hearthstone": {
+        "id": 6948,
+        "name": "Hearthstone",
+        "type": "misc",
+        "quality": "common",
+        "level": 1,
+        "bind": "soulbound",
+        "unique": true,
+        "use": "Returns you to your home location.",
+        "cooldown": 3600
+    },
+    "linen_cloth": {
+        "id": 2589,
+        "name": "Linen Cloth",
+        "type": "trade",
+        "quality": "common",
+        "level": 1,
+        "bind": "none",
+        "unique": false,
+        "sell_price": 15
+    },
+    "copper_ore": {
+        "id": 2770,
+        "name": "Copper Ore",
+        "type": "trade",
+        "quality": "common",
+        "level": 1,
+        "bind": "none",
+        "unique": false,
+        "sell_price": 20
+    },
+    "light_leather": {
+        "id": 2318,
+        "name": "Light Leather",
+        "type": "trade",
+        "quality": "common",
+        "level": 1,
+        "bind": "none",
+        "unique": false,
+        "sell_price": 18
+    },
+    "copper_shortsword": {
+        "id": 2504,
+        "name": "Worn Shortsword",
+        "type": "weapon",
+        "subtype": "one-hand sword",
+        "quality": "common",
+        "level": 1,
+        "bind": "none",
+        "unique": false,
+        "damage": {
+            "min": 2,
+            "max": 4
+        },
+        "speed": 1.8,
+        "dps": 1.67,
+        "stats": {},
+        "sell_price": 23
+    }
+}

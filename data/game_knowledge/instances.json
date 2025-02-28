@@ -1,0 +1,86 @@
+{
+    "deadmines": {
+        "name": "Deadmines",
+        "level_range": [
+            15,
+            25
+        ],
+        "faction": "both",
+        "bosses": [
+            {
+                "name": "Rhahk'Zor",
+                "strategy": "Simple first boss. Tank and spank."
+            },
+            {
+                "name": "Sneed",
+                "strategy": "Kill the Shredder first, then Sneed will come out."
+            },
+            {
+                "name": "Gilnid",
+                "strategy": "Kill the adds first, then focus on the boss."
+            },
+            {
+                "name": "Mr. Smite",
+                "strategy": "He stuns at health thresholds and switches weapons. Save cooldowns for after stuns."
+            },
+            {
+                "name": "Captain Greenskin",
+                "strategy": "Tank adds away from the group, focus down the boss."
+            },
+            {
+                "name": "Edwin VanCleef",
+                "strategy": "He summons adds at low health. Save cooldowns for this phase."
+            }
+        ],
+        "tips": [
+            "Watch for patrols in the foundry area.",
+            "Be careful of the goblin engineers, they can call for help.",
+            "The shortcut through the side tunnel can save time.",
+            "After Mr. Smite, you can jump down to skip trash."
+        ]
+    },
+    "wailing_caverns": {
+        "name": "Wailing Caverns",
+        "level_range": [
+            15,
+            25
+        ],
+        "faction": "both",
+        "bosses": [
+            {
+                "name": "Lady Anacondra",
+                "strategy": "Interrupt her Sleep spell. Tank and spank otherwise."
+            },
+            {
+                "name": "Lord Cobrahn",
+                "strategy": "He will transform into a snake at low health. Increased damage, so save defensives."
+            },
+            {
+                "name": "Kresh",
+                "strategy": "Optional boss. Simple tank and spank fight in the water."
+            },
+            {
+                "name": "Lord Pythas",
+                "strategy": "Interrupt his healing spell. Otherwise tank and spank."
+            },
+            {
+                "name": "Skum",
+                "strategy": "Optional boss. Fights in water. Can charge, so stay close."
+            },
+            {
+                "name": "Lord Serpentis",
+                "strategy": "Focuses random targets. Healers be aware."
+            },
+            {
+                "name": "Verdan the Everliving",
+                "strategy": "Final boss. Can knock players back and stun. Tank against a wall."
+            }
+        ],
+        "tips": [
+            "The dungeon is a maze. Follow the marked path or you'll get lost.",
+            "There are four Fanglord bosses that must be killed before awakening Naralex.",
+            "Deviate Faerie Dragons can put everyone to sleep. Kill them quickly.",
+            "After all bosses, talk to the Disciple to start the final event."
+        ]
+    }
+}

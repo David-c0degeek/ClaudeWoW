@@ -19,7 +19,7 @@ from src.decision.terrain_analyzer import TerrainAnalyzer
 from src.decision.flight_path_manager import FlightPathManager
 from src.decision.dungeon_navigator import DungeonNavigator
 
-class NavigationIntegrator:
+class NavigationSystem:
     """
     Integrates all navigation systems and provides a unified interface
     """
@@ -56,7 +56,7 @@ class NavigationIntegrator:
         self.stuck_detection_threshold = config.get("stuck_detection_threshold", 10.0)  # seconds
         self.auto_mode_selection = config.get("auto_navigation_mode_selection", True)
         
-        self.logger.info("NavigationIntegrator initialized")
+        self.logger.info("NavigationSystem initialized")
     
     def navigate_to(self, state: GameState, destination: Union[Tuple[float, float], Tuple[float, float, float]],
                   destination_zone: str = None, mode: str = "auto") -> List[Dict]:

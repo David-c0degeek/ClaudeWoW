@@ -1,0 +1,61 @@
+{
+    "hogger": {
+        "id": 448,
+        "name": "Hogger",
+        "level": 11,
+        "type": "elite",
+        "faction": "enemy",
+        "zone": "elwynn_forest",
+        "location": {
+            "x": 25.2,
+            "y": 78.5
+        },
+        "hp": 500,
+        "abilities": [
+            "Rushing Charge",
+            "Eat",
+            "Vicious Bite"
+        ],
+        "loot": [
+            {
+                "id": 1127,
+                "name": "Chipped Boar Tusk",
+                "drop_rate": 0.25
+            },
+            {
+                "id": 3667,
+                "name": "Ruined Pelt",
+                "drop_rate": 0.15
+            },
+            {
+                "id": 1114,
+                "name": "Tough Jerky",
+                "drop_rate": 0.3
+            }
+        ],
+        "quest_related": [
+            "Wanted: Hogger"
+        ]
+    },
+    "innkeeper_renee": {
+        "id": 6741,
+        "name": "Innkeeper Renee",
+        "level": 35,
+        "type": "normal",
+        "faction": "alliance",
+        "zone": "stormwind",
+        "location": {
+            "x": 52.3,
+            "y": 67.8
+        },
+        "services": [
+            "inn",
+            "vendor",
+            "food_drink"
+        ],
+        "gossip": [
+            "Welcome to the Gilded Rose. May I help you?",
+            "Looking for a place to stay? We have the softest beds in Stormwind!"
+        ]
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "warrior": {
+        "battle_stance": {
+            "name": "Battle Stance",
+            "level": 1,
+            "type": "stance",
+            "cost": "None",
+            "cooldown": 1.5,
+            "description": "A balanced combat stance.",
+            "effect": "Allows use of Battle stance abilities."
+        },
+        "heroic_strike": {
+            "name": "Heroic Strike",
+            "level": 1,
+            "type": "rage",
+            "cost": 15,
+            "cooldown": 1.5,
+            "description": "A strong attack that increases damage.",
+            "effect": "Instant. Adds 45 damage to your next attack.",
+            "stance": "battle"
+        },
+        "charge": {
+            "name": "Charge",
+            "level": 4,
+            "type": "rage",
+            "cost": 0,
+            "cooldown": 15,
+            "description": "Charges an enemy, generates rage and stuns.",
+            "effect": "Generates 9 rage, stuns for 1 sec.",
+            "stance": "battle",
+            "range": "8-25 yards"
+        }
+    },
+    "mage": {
+        "fireball": {
+            "name": "Fireball",
+            "level": 1,
+            "type": "mana",
+            "cost": 30,
+            "cooldown": 1.5,
+            "cast_time": 2.5,
+            "description": "Hurls a fiery ball that burns the enemy.",
+            "effect": "Deals 18 to 24 Fire damage, plus 6 over 6 sec.",
+            "range": "30 yards"
+        },
+        "frostbolt": {
+            "name": "Frostbolt",
+            "level": 4,
+            "type": "mana",
+            "cost": 25,
+            "cooldown": 1.5,
+            "cast_time": 2.0,
+            "description": "Launches a bolt of frost at the enemy.",
+            "effect": "Deals 16 to 18 Frost damage and slows movement by 50% for 5 sec.",
+            "range": "30 yards"
+        }
+    }
+}

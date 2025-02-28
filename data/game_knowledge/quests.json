@@ -1,0 +1,56 @@
+{
+    "defias_brotherhood": {
+        "id": 155,
+        "name": "The Defias Brotherhood",
+        "level": 14,
+        "min_level": 9,
+        "faction": "alliance",
+        "zone": "westfall",
+        "giver": "Gryan Stoutmantle",
+        "objectives": [
+            "Kill 15 Defias Messenger",
+            "Collect the Unsent Letter"
+        ],
+        "rewards": {
+            "xp": 875,
+            "gold": 25,
+            "items": [
+                {
+                    "id": 1006,
+                    "name": "Tough Leather Boots",
+                    "quality": "uncommon"
+                },
+                {
+                    "id": 1007,
+                    "name": "Studded Leather Belt",
+                    "quality": "uncommon"
+                }
+            ]
+        },
+        "follow_up": "The Defias Brotherhood (Part 2)"
+    },
+    "lazy_peons": {
+        "id": 5441,
+        "name": "Lazy Peons",
+        "level": 2,
+        "min_level": 1,
+        "faction": "horde",
+        "zone": "durotar",
+        "giver": "Foreman Thazz'ril",
+        "objectives": [
+            "Use the Foreman's Blackjack on 5 Lazy Peons"
+        ],
+        "rewards": {
+            "xp": 250,
+            "gold": 5,
+            "items": [
+                {
+                    "id": 6267,
+                    "name": "Disciple's Pants",
+                    "quality": "common"
+                }
+            ]
+        },
+        "follow_up": "Thazz'ril's Pick"
+    }
+}

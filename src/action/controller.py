@@ -571,3 +571,156 @@ class Controller:
         try:
             # Convert string key representation to pynput key
             pynput_key = self._convert_to_pynput_key(key)
+            
+            if pynput_key:
+                # Release the key
+                self.keyboard.release(pynput_key)
+                
+                self.logger.debug(f"Released key: {key}")
+        except Exception as e:
+            self.logger.error(f"Error releasing key {key}: {e}")
+            
+    def _click_mouse(self, x: int, y: int, button: str = "left") -> None:
+        """
+        Click mouse at specified coordinates
+        
+        Args:
+            x: X coordinate
+            y: Y coordinate
+            button: Mouse button to click (left, right, middle)
+        """
+        try:
+            # Convert coordinate to game window
+            x_adjusted = self.window_position[0] + x
+            y_adjusted = self.window_position[1] + y
+            
+            # Move mouse to position
+            pyautogui.moveTo(x_adjusted, y_adjusted, duration=self.mouse_move_speed)
+            
+            # Click the appropriate button
+            if button == "left":
+                pyautogui.click()
+            elif button == "right":
+                pyautogui.rightClick()
+            elif button == "middle":
+                pyautogui.middleClick()
+                
+            self.logger.debug(f"Clicked {button} mouse button at ({x}, {y})")
+            
+        except Exception as e:
+            self.logger.error(f"Error clicking mouse at ({x}, {y}): {e}")
+            
+    def _convert_to_pynput_key(self, key: str) -> Any:
+        """
+        Convert string key representation to pynput key
+        
+        Args:
+            key: String key representation
+            
+        Returns:
+            pynput key object
+        """
+        # Special keys mapping
+        special_keys = {
+            "ctrl": keyboard.Key.ctrl,
+            "shift": keyboard.Key.shift,
+            "alt": keyboard.Key.alt,
+            "enter": keyboard.Key.enter,
+            "space": keyboard.Key.space,
+            "tab": keyboard.Key.tab,
+            "esc": keyboard.Key.esc,
+            "up": keyboard.Key.up,
+            "down": keyboard.Key.down,
+            "left": keyboard.Key.left,
+            "right": keyboard.Key.right,
+            "backspace": keyboard.Key.backspace,
+            "delete": keyboard.Key.delete,
+            "home": keyboard.Key.home,
+            "end": keyboard.Key.end,
+            "page_up": keyboard.Key.page_up,
+            "page_down": keyboard.Key.page_down,
+            "f1": keyboard.Key.f1,
+            "f2": keyboard.Key.f2,
+            "f3": keyboard.Key.f3,
+            "f4": keyboard.Key.f4,
+            "f5": keyboard.Key.f5,
+            "f6": keyboard.Key.f6,
+            "f7": keyboard.Key.f7,
+            "f8": keyboard.Key.f8,
+            "f9": keyboard.Key.f9,
+            "f10": keyboard.Key.f10,
+            "f11": keyboard.Key.f11,
+            "f12": keyboard.Key.f12
+        }
+        
+        # Check if it's a special key
+        if key.lower() in special_keys:
+            return special_keys[key.lower()]
+            
+        # For regular keys, just use the character
+        if len(key) == 1:
+            return key
+            
+        # If key is not recognized, log warning and return None
+        self.logger.warning(f"Unrecognized key: {key}")
+        return None
+            
+    def _get_ability_key(self, ability_name: str) -> str:
+        """
+        Get keybinding for an ability
+        
+        Args:
+            ability_name: Name of the ability
+            
+        Returns:
+            Key binding for the ability
+        """
+        # In a real implementation, this would look up the ability in a mapping
+        # For this simplified implementation, just map to action bar slots
+        
+        # Check if ability is directly in keybindings
+        if ability_name in self.keybindings:
+            return self.keybindings[ability_name]
+            
+        # Default mapping of some common abilities to action bar slots
+        ability_defaults = {
+            # Warrior
+            "Charge": "1",
+            "Heroic Strike": "2",
+            "Thunder Clap": "3",
+            "Rend": "4",
+            "Mortal Strike": "5",
+            "Execute": "6",
+            "Whirlwind": "7",
+            "Hamstring": "8",
+            "Overpower": "9",
+            
+            # Mage
+            "Fireball": "1",
+            "Frostbolt": "2",
+            "Arcane Missiles": "3",
+            "Frost Nova": "4",
+            "Blink": "5",
+            "Polymorph": "6",
+            "Ice Block": "7",
+            "Counterspell": "8",
+            "Evocation": "9",
+            
+            # Priest
+            "Smite": "1",
+            "Shadow Word: Pain": "2",
+            "Power Word: Shield": "3",
+            "Renew": "4",
+            "Mind Blast": "5",
+            "Flash Heal": "6",
+            "Greater Heal": "7",
+            "Psychic Scream": "8",
+            "Fade": "9",
+            
+            # Generic
+            "Auto Attack": "1",
+            "Attack": "1"
+        }
+        
+        # Return the default keybinding for the ability, or the first action bar slot as fallback
+        return ability_defaults.get(ability_name, "1")

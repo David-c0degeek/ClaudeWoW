@@ -1,0 +1,52 @@
+{
+    "wave": {
+        "text": "You wave.",
+        "text_target": "You wave at %s.",
+        "social_impact": "friendly"
+    },
+    "smile": {
+        "text": "You smile.",
+        "text_target": "You smile at %s.",
+        "social_impact": "friendly"
+    },
+    "laugh": {
+        "text": "You laugh.",
+        "text_target": "You laugh at %s.",
+        "social_impact": "friendly"
+    },
+    "thank": {
+        "text": "You thank everyone.",
+        "text_target": "You thank %s.",
+        "social_impact": "friendly"
+    },
+    "cheer": {
+        "text": "You cheer!",
+        "text_target": "You cheer at %s!",
+        "social_impact": "friendly"
+    },
+    "dance": {
+        "text": "You dance.",
+        "text_target": "You dance with %s.",
+        "social_impact": "friendly"
+    },
+    "greet": {
+        "text": "You greet everyone warmly.",
+        "text_target": "You greet %s warmly.",
+        "social_impact": "friendly"
+    },
+    "bow": {
+        "text": "You bow.",
+        "text_target": "You bow before %s.",
+        "social_impact": "respectful"
+    },
+    "applaud": {
+        "text": "You applaud.",
+        "text_target": "You applaud at %s.",
+        "social_impact": "friendly"
+    },
+    "salute": {
+        "text": "You salute.",
+        "text_target": "You salute %s.",
+        "social_impact": "respectful"
+    }
+}

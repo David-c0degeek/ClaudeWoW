@@ -1,0 +1,138 @@
+{
+    "alchemy": {
+        "name": "Alchemy",
+        "type": "crafting",
+        "required_skill": "none",
+        "trainer_locations": {
+            "alliance": [
+                {
+                    "zone": "stormwind",
+                    "npc": "Lilyssia Nightbreeze",
+                    "coords": {
+                        "x": 55.8,
+                        "y": 86.1
+                    }
+                },
+                {
+                    "zone": "ironforge",
+                    "npc": "Tally Berryfizz",
+                    "coords": {
+                        "x": 68.3,
+                        "y": 42.5
+                    }
+                }
+            ],
+            "horde": [
+                {
+                    "zone": "orgrimmar",
+                    "npc": "Yelmak",
+                    "coords": {
+                        "x": 56.2,
+                        "y": 33.8
+                    }
+                },
+                {
+                    "zone": "undercity",
+                    "npc": "Doctor Herbert Halsey",
+                    "coords": {
+                        "x": 47.5,
+                        "y": 73.9
+                    }
+                }
+            ]
+        },
+        "recipes": {
+            "minor_healing_potion": {
+                "name": "Minor Healing Potion",
+                "skill_required": 1,
+                "reagents": [
+                    {
+                        "item": "peacebloom",
+                        "count": 1
+                    },
+                    {
+                        "item": "silverleaf",
+                        "count": 1
+                    },
+                    {
+                        "item": "empty_vial",
+                        "count": 1
+                    }
+                ],
+                "result": {
+                    "item": "minor_healing_potion",
+                    "count": 1
+                }
+            }
+        }
+    },
+    "mining": {
+        "name": "Mining",
+        "type": "gathering",
+        "required_skill": "none",
+        "trainer_locations": {
+            "alliance": [
+                {
+                    "zone": "stormwind",
+                    "npc": "Gelman Stonehand",
+                    "coords": {
+                        "x": 59.7,
+                        "y": 37.5
+                    }
+                },
+                {
+                    "zone": "ironforge",
+                    "npc": "Geofram Bouldertoe",
+                    "coords": {
+                        "x": 50.9,
+                        "y": 26.5
+                    }
+                }
+            ],
+            "horde": [
+                {
+                    "zone": "orgrimmar",
+                    "npc": "Makaru",
+                    "coords": {
+                        "x": 73.1,
+                        "y": 26.1
+                    }
+                },
+                {
+                    "zone": "thunder_bluff",
+                    "npc": "Brek Stonehoof",
+                    "coords": {
+                        "x": 36.2,
+                        "y": 59.8
+                    }
+                }
+            ]
+        },
+        "nodes": {
+            "copper_vein": {
+                "name": "Copper Vein",
+                "skill_required": 1,
+                "yields": [
+                    {
+                        "item": "copper_ore",
+                        "chance": 1.0
+                    },
+                    {
+                        "item": "rough_stone",
+                        "chance": 0.5
+                    },
+                    {
+                        "item": "tigerseye",
+                        "chance": 0.05
+                    }
+                ],
+                "typical_zones": [
+                    "elwynn_forest",
+                    "dun_morogh",
+                    "durotar",
+                    "tirisfal_glades"
+                ]
+            }
+        }
+    }
+}
