@@ -17,8 +17,8 @@
   },
   "personality": {
     "traits": [
-      "friendly and helpful",
       "helpful",
+      "friendly and helpful",
       "friendly"
     ],
     "values": [
@@ -133,6 +133,20 @@
       "community",
       "strength",
       "bravery",
+      "combat prowess",
+      "service",
+      "assistance",
+      "friendship",
+      "community",
+      "strength",
+      "bravery",
+      "combat prowess",
+      "service",
+      "assistance",
+      "friendship",
+      "community",
+      "strength",
+      "bravery",
       "combat prowess"
     ],
     "likes": [],
@@ -204,6 +218,14 @@
       "Need a hand?",
       "I can help with that.",
       "Hello friend!",
+      "Good to see you!",
+      "Need a hand?",
+      "I can help with that.",
+      "Hello friend!",
+      "Good to see you!",
+      "Need a hand?",
+      "I can help with that.",
+      "Hello friend!",
       "Good to see you!"
     ]
   },
@@ -227,9 +249,9 @@
     "attitude_to_enemies": "confrontational and direct"
   },
   "class_specific": {
-    "role_preference": "tank",
+    "role_preference": "dps",
     "fighting_style": "direct and powerful",
-    "specialty": "Protection",
-    "class_pride": 10
+    "specialty": "Fury",
+    "class_pride": 7
   }
 }

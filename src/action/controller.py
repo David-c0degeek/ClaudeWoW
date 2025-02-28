@@ -609,6 +609,35 @@ class Controller:
             
         except Exception as e:
             self.logger.error(f"Error clicking mouse at ({x}, {y}): {e}")
+    
+    def move_mouse(self, x: int, y: int, relative: bool = False) -> None:
+        """
+        Move mouse to position or by a relative amount
+        
+        Args:
+            x: X coordinate or relative movement
+            y: Y coordinate or relative movement
+            relative: If True, moves mouse relative to current position
+        """
+        try:
+            if relative:
+                # Move mouse by relative amount
+                current_pos = pyautogui.position()
+                new_x = current_pos[0] + x
+                new_y = current_pos[1] + y
+                pyautogui.moveTo(new_x, new_y, duration=self.mouse_move_speed)
+            else:
+                # Convert coordinate to game window
+                x_adjusted = self.window_position[0] + x
+                y_adjusted = self.window_position[1] + y
+                
+                # Move mouse to absolute position
+                pyautogui.moveTo(x_adjusted, y_adjusted, duration=self.mouse_move_speed)
+                
+            self.logger.debug(f"Moved mouse to {'relative' if relative else 'absolute'} position: ({x}, {y})")
+            
+        except Exception as e:
+            self.logger.error(f"Error moving mouse to ({x}, {y}): {e}")
             
     def _convert_to_pynput_key(self, key: str) -> Any:
         """
